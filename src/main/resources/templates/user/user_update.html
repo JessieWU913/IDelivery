@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="title='修改用户',active='publish'">
+<header th:replace="back/header::headerFragment(${title},${active})"></header>
+<link th:href="@{/back/plugins/tagsinput/jquery.tagsinput.css}" rel="stylesheet"/>
+<link th:href="@{/back/plugins/select2.dist.css/select2-bootstrap.css}" rel="stylesheet"/>
+<link th:href="@{/back/plugins/toggles/toggles.css}" rel="stylesheet"/>
+
+<link th:href="@{/back/plugins/mditor/css/mditor.min.css}" rel="stylesheet"/>
+<link th:href="@{/back/plugins/dropzone/4.3.0/min/dropzone.min.css}" rel="stylesheet">
+<style>
+    #tags_tagsinput {
+        background-color: #fafafa;
+        border: 1px solid #eeeeee;
+    }
+
+    #tags_addTag input {
+        width: 100%;
+    }
+
+    #tags_addTag {
+        margin-top: -5px;
+    }
+
+    .mditor .editor{
+        font-size: 14px;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+    .mditor .backdrop, .mditor .textarea, .mditor .viewer{
+        font-size: 14px;
+    }
+    .markdown-body{
+        font-size: 14px;
+    }
+    .note-toolbar {
+        text-align: center;
+    }
+
+    .note-editor.note-frame {
+        border: none;
+    }
+
+    .note-editor .note-toolbar {
+        background-color: #f5f5f5;
+        padding-bottom: 10px;
+    }
+
+    .note-toolbar .note-btn-group {
+        margin: 0;
+    }
+
+    .note-toolbar .note-btn {
+        border: none;
+    }
+
+    #articleForm #dropzone {
+        min-height: 200px;
+        background-color: #dbdde0;
+        line-height:200px;
+        margin-bottom: 10px;
+    }
+    #articleForm .dropzone {
+        border: 1px dashed #8662c6;
+        border-radius: 5px;
+        background: white;
+    }
+    #articleForm .dropzone .dz-message {
+        font-weight: 400;
+    }
+    #articleForm .dropzone .dz-message .note {
+        font-size: 0.8em;
+        font-weight: 200;
+        display: block;
+        margin-top: 1.4rem;
+    }
+
+
+
+</style>
+<body class="fixed-left">
+<div id="wrapper">
+    <div th:replace="back/header::header-body"></div>
+    <div class="content-page">
+        <div class="content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="page-title">
+
+                            <th:block >
+                                修改用户
+                            </th:block>
+                        </h4>
+                    </div>
+                    <div class="col-md-12">
+                        <form id="articleForm" th:action="@{/updateuser}" method="post" enctype="multipart/form-data">
+                            <input type="hidden" th:value="${user.userId}" name="userId">
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                       &ensp;用户名：<input th:value="${user.userName}" type="text" class="form-control" placeholder="请输入用户名（必须）" name="username"
+                                       required="required" aria-required="true"/>
+                        </div>
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;密码：<input th:value="${user.password}" type="password" class="form-control" placeholder="请输入密码（必须）" name="password"
+                                                 required="required" aria-required="true"/>
+                            </div>
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;角色：<select class="form-control" name="roleName">
+                                <th:block th:each="role:${roles}" th:selected="${user.roleName}">
+                                <option th:text="${role.roleName}" th:value="${role.roleId}" th:field="*{user.roleId}"></option>
+                                </th:block>
+                            </select>
+                            </div>
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;性别：<select class="form-control" name="sex" >
+                                <option value="0" th:field="*{user.sex}">男</option>
+                                <option value="1" th:field="*{user.sex}">女</option>
+                            </select>
+                            </div>
+
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;电话号码：<input th:value="${user.phonenumber}" type="text" class="form-control" placeholder="请输入电话号码（选填）" name="phonenumber"
+                                                 />
+                            </div>
+
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;邮箱：<input th:value="${user.email}" type="text" class="form-control" placeholder="请输入邮箱（选填）" name="email"
+                                                />
+                            </div>
+
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;备注：<input type="text" th:value="${user.remark}" class="form-control" placeholder="请输入备注（选填）" name="remark"
+                                                />
+                            </div>
+
+                            <div class="form-group col-md-6" style="padding: 0 10px 0 0;">
+                                &ensp;头像：<input type="file"  name="fileUpload" />
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <div class="text-right">
+                                <a class="btn btn-default waves-effect waves-light" th:href="@{/user/list}">返回列表</a>
+                                <button type="submit" class="btn btn-primary waves-effect waves-light" >
+                                    保存
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div th:replace="back/footer :: footer-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="back/footer :: footer"></div>
+
+<script th:src="@{/back/plugins/tagsinput/jquery.tagsinput.min.js}"></script>
+<script th:src="@{/back/plugins/jquery-multi-select/jquery.quicksearch.js}"></script>
+
+<script th:src="@{/back/plugins/mditor/js/mditor.min.js}"></script>
+<script th:src="@{/back/plugins/multi-select/0.9.12/js/jquery.multi-select.min.js}"></script>
+<script th:src="@{/back/plugins/select2/3.4.8/select2.min.js}"></script>
+<script th:src="@{//cdn.bootcss.com/jquery-toggles/2.0.4/toggles.min.js}"></script>
+<script th:src="@{/back/plugins/dropzone/4.3.0/min/dropzone.min.js}"></script>
+<script th:src="@{/back/plugins/to-markdown/3.1.0/to-markdown.min.js}"></script>
+
+<script th:src="@{/back/js/article.js}"></script>
+
+
+
+</body>
+</html>

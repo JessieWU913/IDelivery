@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>在线点餐 - 菜单</title>
+    
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
+    <script th:src="@{/assets/js/amazeui.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/assets/css/amazeui.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/app.css}"/>
+    
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            text-align: center;
+        }
+        
+        .cart-icon {
+            position: absolute;
+            top: 30px;
+            right: 20px;
+            font-size: 28px;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 15px auto 0;
+            padding: 0 20px;
+        }
+        
+        .search-box input {
+            border-radius: 25px;
+            padding: 10px 20px;
+            border: none;
+        }
+        
+        .category-nav {
+            background: white;
+            padding: 15px 0;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .category-item {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f0f0f0;
+        }
+        
+        .category-item:hover, .category-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .product-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+        
+        .product-img-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .product-info {
+            padding: 15px;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .product-desc {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 10px;
+            height: 40px;
+            overflow: hidden;
+        }
+        
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .product-price {
+            font-size: 24px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .product-price .original-price {
+            font-size: 14px;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+        
+        .product-sales {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .add-cart-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .add-cart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .recommend-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .empty-msg {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 头部 -->
+<div class="header">
+    <div class="am-container">
+        <h1>🍔 在线点餐系统</h1>
+        <a href="/cart/index" class="cart-icon" title="购物车">🛒</a>
+        <div class="search-box">
+            <input type="text" id="searchInput" class="am-form-field" placeholder="搜索你想吃的美食..." />
+        </div>
+    </div>
+</div>
+
+<!-- 分类导航 -->
+<div class="category-nav am-container">
+    <div class="category-item active" data-category="all">全部</div>
+    <div th:each="category : ${categories}" 
+         class="category-item" 
+         th:data-category="${category.categoryId}"
+         th:text="${category.categoryName}">
+    </div>
+</div>
+
+<!-- 菜品列表 -->
+<div class="am-container">
+    <div class="product-grid" id="productGrid">
+        <div th:each="product : ${products}" 
+             class="product-card" 
+             th:data-category="${product.categoryId}">
+            <div style="position: relative;">
+                <img th:if="${product.productImg != null}" 
+                     th:src="${product.productImg}" 
+                     th:alt="${product.productName}"
+                     class="product-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="product-img-placeholder" 
+                     th:style="${product.productImg != null ? 'display:none;' : ''}"
+                     th:text="${product.productName.substring(0,1)}">菜</div>
+                <span th:if="${product.isRecommend == '1'}" class="recommend-badge">🔥 推荐</span>
+            </div>
+            <div class="product-info">
+                <div class="product-name" th:text="${product.productName}">菜品名称</div>
+                <div class="product-desc" th:text="${product.productDesc}">菜品描述</div>
+                <div class="product-footer">
+                    <div>
+                        <span class="product-price">
+                            ¥<span th:text="${product.price}">0.00</span>
+                            <span class="original-price" 
+                                  th:if="${product.originalPrice != null}"
+                                  th:text="'¥' + ${product.originalPrice}"></span>
+                        </span>
+                        <div class="product-sales">已售 <span th:text="${product.sales}">0</span></div>
+                    </div>
+                    <button class="add-cart-btn" th:onclick="'addToCart(' + ${product.productId} + ')'">
+                        加入购物车
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="emptyMsg" class="empty-msg" style="display: none;">
+        暂无菜品数据
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    
+    // 设置AJAX请求的CSRF token
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+    $(document).ajaxSend(function(e, xhr, options) {
+        xhr.setRequestHeader(header, token);
+    });
+    
+    // 分类切换
+    $('.category-item').click(function() {
+        $('.category-item').removeClass('active');
+        $(this).addClass('active');
+        
+        var categoryId = $(this).data('category');
+        filterProducts(categoryId);
+    });
+    
+    // 搜索功能
+    var searchTimer;
+    $('#searchInput').on('input', function() {
+        clearTimeout(searchTimer);
+        var keyword = $(this).val().trim();
+        
+        searchTimer = setTimeout(function() {
+            if (keyword === '') {
+                $('.product-card').show();
+                checkEmpty();
+            } else {
+                searchProducts(keyword);
+            }
+        }, 300);
+    });
+    
+    // 过滤菜品
+    function filterProducts(categoryId) {
+        if (categoryId === 'all') {
+            $('.product-card').show();
+        } else {
+            $('.product-card').hide();
+            $('.product-card[data-category="' + categoryId + '"]').show();
+        }
+        checkEmpty();
+    }
+    
+    // 搜索菜品
+    function searchProducts(keyword) {
+        $.ajax({
+            url: '/menu/search',
+            type: 'GET',
+            data: { keyword: keyword },
+            success: function(products) {
+                renderProducts(products);
+            },
+            error: function() {
+                alert('搜索失败，请重试');
+            }
+        });
+    }
+    
+    // 渲染菜品
+    function renderProducts(products) {
+        var html = '';
+        if (products.length === 0) {
+            $('#productGrid').html('');
+            $('#emptyMsg').show();
+            return;
+        }
+        
+        $('#emptyMsg').hide();
+        products.forEach(function(product) {
+            var recommendBadge = product.isRecommend === '1' ? 
+                '<span class="recommend-badge">🔥 推荐</span>' : '';
+            var originalPrice = product.originalPrice ? 
+                '<span class="original-price">¥' + product.originalPrice + '</span>' : '';
+            
+            html += '<div class="product-card" data-category="' + product.categoryId + '">';
+            html += '  <div style="position: relative;">';
+            html += '    <div class="product-img">' + product.productName.substring(0,1) + '</div>';
+            html += recommendBadge;
+            html += '  </div>';
+            html += '  <div class="product-info">';
+            html += '    <div class="product-name">' + product.productName + '</div>';
+            html += '    <div class="product-desc">' + (product.productDesc || '') + '</div>';
+            html += '    <div class="product-footer">';
+            html += '      <div>';
+            html += '        <span class="product-price">¥' + product.price + originalPrice + '</span>';
+            html += '        <div class="product-sales">已售 ' + product.sales + '</div>';
+            html += '      </div>';
+            html += '      <button class="add-cart-btn" onclick="addToCart(' + product.productId + ')">加入购物车</button>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '</div>';
+        });
+        
+        $('#productGrid').html(html);
+    }
+    
+    // 检查是否为空
+    function checkEmpty() {
+        var visibleCount = $('.product-card:visible').length;
+        if (visibleCount === 0) {
+            $('#emptyMsg').show();
+        } else {
+            $('#emptyMsg').hide();
+        }
+    }
+});
+
+// 加入购物车
+function addToCart(productId) {
+    $.ajax({
+        url: '/cart/add',
+        type: 'POST',
+        data: {
+            productId: productId,
+            quantity: 1
+        },
+        success: function(res) {
+            if (res.success) {
+                // 询问用户是否前往购物车
+                if (confirm('添加成功！是否前往购物车查看？')) {
+                    location.href = '/cart/index';
+                }
+            } else {
+                if (res.message === '请先登录') {
+                    if (confirm('请先登录后再操作，是否前往登录页面？')) {
+                        location.href = '/login.html';
+                    }
+                } else {
+                    alert(res.message || '添加失败');
+                }
+            }
+        },
+        error: function() {
+            alert('网络错误，请重试');
+        }
+    });
+}
+</script>
+
+</body>
+</html>

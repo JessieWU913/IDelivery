@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cs.qqq.Mapper.CartMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CartResultMap" type="cs.qqq.Entity.Cart">
+        <id property="cartId" column="cart_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="productName" column="product_name"/>
+        <result property="price" column="price"/>
+        <result property="productImg" column="product_img"/>
+        <result property="stock" column="stock"/>
+    </resultMap>
+
+    <!-- 添加到购物车 -->
+    <insert id="addToCart" parameterType="cs.qqq.Entity.Cart" useGeneratedKeys="true" keyProperty="cartId">
+        INSERT INTO t_cart (user_id, product_id, quantity)
+        VALUES (#{userId}, #{productId}, #{quantity})
+        ON DUPLICATE KEY UPDATE quantity = quantity + #{quantity}
+    </insert>
+
+    <!-- 查询购物车项 -->
+    <select id="findCartByUserAndProduct" resultMap="CartResultMap">
+        SELECT * FROM t_cart
+        WHERE user_id = #{userId} AND product_id = #{productId}
+    </select>
+
+    <!-- 更新数量 -->
+    <update id="updateQuantity">
+        UPDATE t_cart
+        SET quantity = #{quantity}
+        WHERE cart_id = #{cartId}
+    </update>
+
+    <!-- 查询用户购物车列表（带商品信息） -->
+    <select id="findCartListByUserId" resultMap="CartResultMap">
+        SELECT 
+            c.cart_id,
+            c.user_id,
+            c.product_id,
+            c.quantity,
+            c.create_time,
+            c.update_time,
+            p.product_name,
+            p.price,
+            p.product_img,
+            p.stock
+        FROM t_cart c
+        LEFT JOIN t_product p ON c.product_id = p.product_id
+        WHERE c.user_id = #{userId}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <!-- 删除购物车项 -->
+    <delete id="deleteCartItem">
+        DELETE FROM t_cart WHERE cart_id = #{cartId}
+    </delete>
+
+    <!-- 清空购物车 -->
+    <delete id="clearCart">
+        DELETE FROM t_cart WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

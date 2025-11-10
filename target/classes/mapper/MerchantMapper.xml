@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cs.qqq.Mapper.MerchantMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="MerchantResultMap" type="cs.qqq.Entity.Merchant">
+        <id property="merchantId" column="merchant_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="merchantName" column="merchant_name"/>
+        <result property="description" column="description"/>
+        <result property="logo" column="logo"/>
+        <result property="address" column="address"/>
+        <result property="phone" column="phone"/>
+        <result property="businessHours" column="business_hours"/>
+        <result property="status" column="status"/>
+        <result property="rating" column="rating"/>
+        <result property="sales" column="sales"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 根据用户ID查询商户 -->
+    <select id="findByUserId" resultMap="MerchantResultMap">
+        SELECT * FROM t_merchant WHERE user_id = #{userId}
+    </select>
+
+    <!-- 根据商户ID查询商户 -->
+    <select id="findById" resultMap="MerchantResultMap">
+        SELECT * FROM t_merchant WHERE merchant_id = #{merchantId}
+    </select>
+
+    <!-- 查询所有营业中的商户 -->
+    <select id="findAllActive" resultMap="MerchantResultMap">
+        SELECT * FROM t_merchant WHERE status = 1 ORDER BY rating DESC, sales DESC
+    </select>
+
+    <!-- 查询所有商户 -->
+    <select id="findAll" resultMap="MerchantResultMap">
+        SELECT * FROM t_merchant ORDER BY create_time DESC
+    </select>
+
+    <!-- 添加商户 -->
+    <insert id="insert" parameterType="cs.qqq.Entity.Merchant" useGeneratedKeys="true" keyProperty="merchantId">
+        INSERT INTO t_merchant (
+            user_id, merchant_name, description, logo, address, phone, 
+            business_hours, status, rating, sales
+        ) VALUES (
+            #{userId}, #{merchantName}, #{description}, #{logo}, #{address}, #{phone},
+            #{businessHours}, #{status}, #{rating}, #{sales}
+        )
+    </insert>
+
+    <!-- 更新商户信息 -->
+    <update id="update" parameterType="cs.qqq.Entity.Merchant">
+        UPDATE t_merchant
+        <set>
+            <if test="merchantName != null">merchant_name = #{merchantName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="logo != null">logo = #{logo},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="businessHours != null">business_hours = #{businessHours},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="sales != null">sales = #{sales},</if>
+        </set>
+        WHERE merchant_id = #{merchantId}
+    </update>
+
+    <!-- 删除商户 -->
+    <delete id="delete">
+        DELETE FROM t_merchant WHERE merchant_id = #{merchantId}
+    </delete>
+
+    <!-- 更新商户状态 -->
+    <update id="updateStatus">
+        UPDATE t_merchant SET status = #{status} WHERE merchant_id = #{merchantId}
+    </update>
+
+</mapper>

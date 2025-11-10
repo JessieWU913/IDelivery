@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>购物车 - 外卖系统</title>
+    <link rel="stylesheet" href="/assets/css/amazeui.min.css">
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/amazeui.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+        
+        .cart-item:hover {
+            background: #f9f9f9;
+        }
+        
+        .item-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+        
+        .item-img-placeholder {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .item-price {
+            font-size: 16px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 20px;
+        }
+        
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        
+        .qty-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .qty-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        
+        .item-total {
+            font-size: 18px;
+            color: #ff6b6b;
+            font-weight: bold;
+            width: 120px;
+            text-align: right;
+            margin-right: 20px;
+        }
+        
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .delete-btn:hover {
+            background: #ff5252;
+        }
+        
+        .cart-summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .total-price {
+            font-size: 24px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .checkout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-cart-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .clear-cart-btn {
+            background: #999;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <div class="page-header">
+            <h1 class="page-title">🛒 我的购物车</h1>
+            <div>
+                <button class="back-btn" onclick="location.href='/menu/index'">继续选购</button>
+                <button class="clear-cart-btn" onclick="clearCart()" th:if="${cartList != null && cartList.size() > 0}">清空购物车</button>
+            </div>
+        </div>
+        
+        <div th:if="${cartList == null || cartList.size() == 0}" class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <h3>购物车是空的</h3>
+            <p>去逛逛，挑选喜欢的商品吧~</p>
+            <button class="back-btn" style="margin-top: 20px;" onclick="location.href='/menu/index'">去选购</button>
+        </div>
+        
+        <div th:if="${cartList != null && cartList.size() > 0}">
+            <div th:each="item : ${cartList}" class="cart-item">
+                <img th:if="${item.productImg != null}" 
+                     th:src="${item.productImg}" 
+                     th:alt="${item.productName}"
+                     class="item-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="item-img-placeholder" 
+                     th:style="${item.productImg != null ? 'display:none;' : ''}"
+                     th:text="${item.productName.substring(0,1)}">菜</div>
+                
+                <div class="item-info">
+                    <div class="item-name" th:text="${item.productName}">商品名称</div>
+                    <div class="item-price">¥<span th:text="${item.price}">0.00</span></div>
+                </div>
+                
+                <div class="quantity-control">
+                    <button class="qty-btn" th:onclick="'updateQuantity(' + ${item.cartId} + ', ' + ${item.quantity - 1} + ')'">-</button>
+                    <input type="number" class="qty-input" th:value="${item.quantity}" 
+                           th:id="'qty-' + ${item.cartId}" readonly />
+                    <button class="qty-btn" th:onclick="'updateQuantity(' + ${item.cartId} + ', ' + ${item.quantity + 1} + ')'">+</button>
+                </div>
+                
+                <div class="item-total">
+                    ¥<span th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2)}">0.00</span>
+                </div>
+                
+                <button class="delete-btn" th:onclick="'deleteItem(' + ${item.cartId} + ')'">删除</button>
+            </div>
+            
+            <div class="cart-summary">
+                <div>
+                    <span style="font-size: 18px; color: #666;">合计：</span>
+                    <span class="total-price">¥<span th:text="${#numbers.formatDecimal(totalPrice, 1, 2)}">0.00</span></span>
+                </div>
+                <button class="checkout-btn" onclick="checkout()">去结算</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 设置AJAX请求的CSRF token
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+        
+        // 更新数量
+        function updateQuantity(cartId, newQuantity) {
+            if (newQuantity < 1) {
+                alert('数量不能少于1');
+                return;
+            }
+            
+            $.ajax({
+                url: '/cart/update',
+                type: 'POST',
+                data: {
+                    cartId: cartId,
+                    quantity: newQuantity
+                },
+                success: function(res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        alert(res.message || '更新失败');
+                    }
+                },
+                error: function() {
+                    alert('网络错误，请重试');
+                }
+            });
+        }
+        
+        // 删除商品
+        function deleteItem(cartId) {
+            if (!confirm('确定要删除这个商品吗?')) {
+                return;
+            }
+            
+            $.ajax({
+                url: '/cart/delete',
+                type: 'POST',
+                data: { cartId: cartId },
+                success: function(res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        alert(res.message || '删除失败');
+                    }
+                },
+                error: function() {
+                    alert('网络错误，请重试');
+                }
+            });
+        }
+        
+        // 清空购物车
+        function clearCart() {
+            if (!confirm('确定要清空购物车吗?')) {
+                return;
+            }
+            
+            $.ajax({
+                url: '/cart/clear',
+                type: 'POST',
+                success: function(res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        alert(res.message || '清空失败');
+                    }
+                },
+                error: function() {
+                    alert('网络错误，请重试');
+                }
+            });
+        }
+        
+        // 结算
+        function checkout() {
+            alert('结算功能开发中，敬请期待！');
+            // TODO: 跳转到订单确认页面
+            // location.href = '/order/confirm';
+        }
+    </script>
+</body>
+</html>

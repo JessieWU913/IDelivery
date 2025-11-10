@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cs.qqq.Mapper.CategoryMapper">
+
+    <!-- 查询所有启用的分类 -->
+    <select id="findAllCategories" resultType="cs.qqq.Entity.Category">
+        SELECT * FROM t_category 
+        WHERE status = '1'
+        ORDER BY sort_order ASC
+    </select>
+
+    <!-- 根据ID查询分类 -->
+    <select id="findCategoryById" resultType="cs.qqq.Entity.Category">
+        SELECT * FROM t_category 
+        WHERE category_id = #{categoryId}
+    </select>
+
+    <!-- 添加分类 -->
+    <insert id="addCategory" useGeneratedKeys="true" keyProperty="categoryId">
+        INSERT INTO t_category (
+            category_name,
+            category_desc,
+            category_icon,
+            sort_order,
+            status
+        ) VALUES (
+            #{categoryName},
+            #{categoryDesc},
+            #{categoryIcon},
+            #{sortOrder},
+            #{status}
+        )
+    </insert>
+
+    <!-- 更新分类 -->
+    <update id="updateCategory">
+        UPDATE t_category
+        SET category_name = #{categoryName},
+            category_desc = #{categoryDesc},
+            category_icon = #{categoryIcon},
+            sort_order = #{sortOrder},
+            status = #{status}
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <!-- 删除分类 -->
+    <delete id="deleteCategory">
+        DELETE FROM t_category
+        WHERE category_id = #{categoryId}
+    </delete>
+
+</mapper>

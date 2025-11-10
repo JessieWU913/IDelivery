@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cs.qqq.Mapper.ProductMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ProductResultMap" type="cs.qqq.Entity.Product">
+        <id property="productId" column="product_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productDesc" column="product_desc"/>
+        <result property="productImg" column="product_img"/>
+        <result property="price" column="price"/>
+        <result property="originalPrice" column="original_price"/>
+        <result property="stock" column="stock"/>
+        <result property="sales" column="sales"/>
+        <result property="status" column="status"/>
+        <result property="isRecommend" column="is_recommend"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="categoryName" column="category_name"/>
+    </resultMap>
+
+    <!-- 查询所有上架的菜品 -->
+    <select id="findAllProducts" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.status = '1'
+        ORDER BY p.product_id DESC
+    </select>
+
+    <!-- 根据分类ID查询菜品 -->
+    <select id="findProductsByCategory" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.category_id = #{categoryId} AND p.status = '1'
+        ORDER BY p.sales DESC
+    </select>
+
+    <!-- 根据ID查询菜品详情 -->
+    <select id="findProductById" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.product_id = #{productId}
+    </select>
+
+    <!-- 搜索菜品 -->
+    <select id="searchProducts" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.status = '1'
+        <if test="keyword != null and keyword != ''">
+            AND p.product_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY p.sales DESC
+    </select>
+
+    <!-- 查询推荐菜品 -->
+    <select id="findRecommendProducts" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.is_recommend = '1' AND p.status = '1'
+        ORDER BY p.sales DESC
+        LIMIT 10
+    </select>
+
+    <!-- 查询热销菜品 -->
+    <select id="findHotProducts" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.status = '1'
+        ORDER BY p.sales DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 添加菜品 -->
+    <insert id="addProduct" useGeneratedKeys="true" keyProperty="productId">
+        INSERT INTO t_product (
+            category_id,
+            product_name,
+            product_desc,
+            product_img,
+            price,
+            original_price,
+            stock,
+            status,
+            is_recommend
+        ) VALUES (
+            #{categoryId},
+            #{productName},
+            #{productDesc},
+            #{productImg},
+            #{price},
+            #{originalPrice},
+            #{stock},
+            #{status},
+            #{isRecommend}
+        )
+    </insert>
+
+    <!-- 更新菜品 -->
+    <update id="updateProduct">
+        UPDATE t_product
+        SET category_id = #{categoryId},
+            product_name = #{productName},
+            product_desc = #{productDesc},
+            product_img = #{productImg},
+            price = #{price},
+            original_price = #{originalPrice},
+            stock = #{stock},
+            status = #{status},
+            is_recommend = #{isRecommend}
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 删除菜品 -->
+    <delete id="deleteProduct">
+        DELETE FROM t_product
+        WHERE product_id = #{productId}
+    </delete>
+
+    <!-- 更新库存 -->
+    <update id="updateStock">
+        UPDATE t_product
+        SET stock = stock - #{quantity}
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 更新销量 -->
+    <update id="updateSales">
+        UPDATE t_product
+        SET sales = sales + #{quantity}
+        WHERE product_id = #{productId}
+    </update>
+
+</mapper>
