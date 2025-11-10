@@ -14,6 +14,11 @@ public interface CategoryService {
     List<Category> getAllCategories();
     
     /**
+     * 查询所有分类（包括禁用的）
+     */
+    List<Category> findAll();
+    
+    /**
      * 根据ID查询分类
      */
     Category getCategoryById(Long categoryId);

@@ -50,17 +50,30 @@ public class ProductServiceImpl implements ProductService {
     }
     
     @Override
-    public void addProduct(Product product) {
+    public List<Product> findByMerchantId(Long merchantId) {
+        return productMapper.findByMerchantId(merchantId);
+    }
+    
+    @Override
+    public Product findById(Long productId) {
+        return productMapper.findById(productId);
+    }
+    
+    @Override
+    public int addProduct(Product product) {
         productMapper.addProduct(product);
+        return 1;
     }
     
     @Override
-    public void updateProduct(Product product) {
+    public int updateProduct(Product product) {
         productMapper.updateProduct(product);
+        return 1;
     }
     
     @Override
-    public void deleteProduct(Long productId) {
+    public int deleteProduct(Long productId) {
         productMapper.deleteProduct(productId);
+        return 1;
     }
 }

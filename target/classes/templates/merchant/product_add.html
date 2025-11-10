@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>添加菜品</title>
+    
+    <link rel="stylesheet" th:href="@{/back/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/style.min.css}">
+</head>
+<body>
+    <div id="wrapper">
+        <div id="page-wrapper" class="gray-bg">
+            <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-lg-10">
+                    <h2>添加菜品</h2>
+                    <ol class="breadcrumb">
+                        <li><a th:href="@{/merchant/index}">商户中心</a></li>
+                        <li class="active">添加菜品</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="wrapper wrapper-content">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ibox">
+                            <div class="ibox-content">
+                                <form id="productForm" class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">菜品名称</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="productName" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">菜品分类</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" id="categoryId" required>
+                                                <option value="">请选择分类</option>
+                                                <option th:each="category : ${categories}" 
+                                                        th:value="${category.categoryId}" 
+                                                        th:text="${category.categoryName}">分类</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">菜品描述</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" id="productDesc" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">价格(元)</label>
+                                        <div class="col-sm-10">
+                                            <input type="number" step="0.01" class="form-control" id="price" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">原价(元)</label>
+                                        <div class="col-sm-10">
+                                            <input type="number" step="0.01" class="form-control" id="originalPrice">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">库存</label>
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" id="stock" value="100" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">图片URL</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="productImg" placeholder="/img/product/xxx.jpg">
+                                            <small class="text-muted">请输入图片路径，如：/img/product/gongbao.jpg</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">状态</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" id="status">
+                                                <option value="1">上架</option>
+                                                <option value="0">下架</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button type="submit" class="btn btn-primary">保存</button>
+                                            <a th:href="@{/merchant/index}" class="btn btn-default">返回</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/back/js/jquery.min.js}"></script>
+    <script th:src="@{/back/js/bootstrap.js}"></script>
+    <script>
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+        
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+
+        $('#productForm').submit(function(e) {
+            e.preventDefault();
+            
+            var product = {
+                productName: $('#productName').val(),
+                categoryId: $('#categoryId').val(),
+                productDesc: $('#productDesc').val(),
+                price: $('#price').val(),
+                originalPrice: $('#originalPrice').val() || $('#price').val(),
+                stock: $('#stock').val(),
+                productImg: $('#productImg').val() || '/img/product/default.jpg',
+                status: $('#status').val()
+            };
+            
+            $.ajax({
+                url: '/merchant/product/add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(product),
+                success: function(result) {
+                    if (result.success) {
+                        alert('添加成功！');
+                        window.location.href = '/merchant/index';
+                    } else {
+                        alert('添加失败：' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('添加失败，请重试');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

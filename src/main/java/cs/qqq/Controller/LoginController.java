@@ -41,10 +41,13 @@ public class LoginController {
         HttpSession httpSession=httpServletRequest.getSession();
         if (user!=null){
             httpSession.setAttribute("currentUser",user);
+            httpSession.setAttribute("user",user);  // 兼容性，某些页面使用user
             
-            // 根据角色判断跳转页面：管理员(角色1,2)进入后台，普通用户进入点餐页面
+            // 根据角色判断跳转页面
             if (user.getRoleId() != null && (user.getRoleId() == 1 || user.getRoleId() == 2)) {
                 return "redirect:/userList";  // 管理员进入后台
+            } else if (user.getRoleId() != null && user.getRoleId() == 3) {
+                return "redirect:/merchant/index";  // 商户进入商户管理页面
             } else {
                 return "redirect:/menu/index";  // 普通用户进入点餐页面
             }

@@ -127,8 +127,8 @@ public class MerchantController {
         product.setMerchantId(merchant.getMerchantId());
         
         // 设置默认值
-        if (product.getStatus() == null) {
-            product.setStatus(1);
+        if (product.getStatus() == null || product.getStatus().isEmpty()) {
+            product.setStatus("1");
         }
         if (product.getSales() == null) {
             product.setSales(0);

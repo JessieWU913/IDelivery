@@ -7,6 +7,7 @@
     <!-- 结果映射 -->
     <resultMap id="ProductResultMap" type="cs.qqq.Entity.Product">
         <id property="productId" column="product_id"/>
+        <result property="merchantId" column="merchant_id"/>
         <result property="categoryId" column="category_id"/>
         <result property="productName" column="product_name"/>
         <result property="productDesc" column="product_desc"/>
@@ -78,6 +79,23 @@
         WHERE p.status = '1'
         ORDER BY p.sales DESC
         LIMIT #{limit}
+    </select>
+
+    <!-- 根据商户ID查询菜品 -->
+    <select id="findByMerchantId" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.merchant_id = #{merchantId}
+        ORDER BY p.create_time DESC
+    </select>
+
+    <!-- 根据ID查询菜品详情 -->
+    <select id="findById" resultMap="ProductResultMap">
+        SELECT p.*, c.category_name
+        FROM t_product p
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        WHERE p.product_id = #{productId}
     </select>
 
     <!-- 添加菜品 -->

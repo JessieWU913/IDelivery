@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>商户管理中心</title>
+    
+    <link rel="stylesheet" th:href="@{/back/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/style.min.css}">
+    
+    <style>
+        .merchant-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .merchant-info h2 {
+            margin-top: 0;
+            font-size: 28px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .stat-card h3 {
+            margin-top: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .status-active {
+            background: #52c41a;
+            color: white;
+        }
+        .status-inactive {
+            background: #f5222d;
+            color: white;
+        }
+        .product-table {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="page-wrapper" class="gray-bg">
+            <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-lg-10">
+                    <h2>商户管理中心</h2>
+                    <ol class="breadcrumb">
+                        <li><a href="/">首页</a></li>
+                        <li class="active">商户中心</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="wrapper wrapper-content">
+                <!-- 商户信息卡片 -->
+                <div class="merchant-header">
+                    <div class="merchant-info">
+                        <h2 th:text="${merchant.merchantName}">商户名称</h2>
+                        <p th:text="${merchant.description}">商户简介</p>
+                        <p>
+                            <i class="fa fa-map-marker"></i> <span th:text="${merchant.address}">地址</span>
+                            <i class="fa fa-phone" style="margin-left: 20px;"></i> <span th:text="${merchant.phone}">电话</span>
+                            <i class="fa fa-clock-o" style="margin-left: 20px;"></i> <span th:text="${merchant.businessHours}">营业时间</span>
+                        </p>
+                        <p>
+                            状态: 
+                            <span class="status-badge" th:classappend="${merchant.status == 1} ? 'status-active' : 'status-inactive'"
+                                  th:text="${merchant.status == 1} ? '营业中' : '已休息'">营业中</span>
+                            <button class="btn btn-sm btn-warning" style="margin-left: 10px;" onclick="toggleStatus()">
+                                切换状态
+                            </button>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 统计数据 -->
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="stat-card">
+                            <h3>菜品数量</h3>
+                            <div class="number" th:text="${productCount}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="stat-card">
+                            <h3>月销量</h3>
+                            <div class="number" th:text="${merchant.sales}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="stat-card">
+                            <h3>评分</h3>
+                            <div class="number" th:text="${merchant.rating}">5.0</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="stat-card">
+                            <h3>今日订单</h3>
+                            <div class="number">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快捷操作 -->
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-lg-12">
+                        <div class="product-table">
+                            <h3>快捷操作</h3>
+                            <div style="margin-top: 20px;">
+                                <a th:href="@{/merchant/product/add}" class="btn btn-primary">
+                                    <i class="fa fa-plus"></i> 添加新菜品
+                                </a>
+                                <a th:href="@{/merchant/products}" class="btn btn-success">
+                                    <i class="fa fa-list"></i> 管理菜品
+                                </a>
+                                <a href="/logout" class="btn btn-danger pull-right">
+                                    <i class="fa fa-sign-out"></i> 退出登录
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近菜品 -->
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-lg-12">
+                        <div class="product-table">
+                            <h3>我的菜品</h3>
+                            <table class="table table-striped" style="margin-top: 20px;">
+                                <thead>
+                                    <tr>
+                                        <th>菜品名称</th>
+                                        <th>分类</th>
+                                        <th>价格</th>
+                                        <th>库存</th>
+                                        <th>销量</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="product : ${products}">
+                                        <td th:text="${product.productName}">菜品名</td>
+                                        <td th:text="${product.categoryName}">分类</td>
+                                        <td>¥<span th:text="${product.price}">0</span></td>
+                                        <td th:text="${product.stock}">0</td>
+                                        <td th:text="${product.sales}">0</td>
+                                        <td>
+                                            <span class="label" th:classappend="${product.status == '1'} ? 'label-primary' : 'label-default'"
+                                                  th:text="${product.status == '1'} ? '上架' : '下架'">上架</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/merchant/product/edit/{id}(id=${product.productId})}" class="btn btn-xs btn-info">编辑</a>
+                                            <button class="btn btn-xs btn-danger" th:onclick="'deleteProduct(' + ${product.productId} + ')'">删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(products)}">
+                                        <td colspan="7" style="text-align: center; color: #999;">
+                                            暂无菜品，<a th:href="@{/merchant/product/add}">点击添加</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/back/js/jquery.min.js}"></script>
+    <script th:src="@{/back/js/bootstrap.js}"></script>
+    <script>
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+        
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+
+        function toggleStatus() {
+            $.ajax({
+                url: '/merchant/toggle-status',
+                type: 'POST',
+                success: function(result) {
+                    if (result.success) {
+                        alert(result.message);
+                        location.reload();
+                    } else {
+                        alert(result.message);
+                    }
+                },
+                error: function() {
+                    alert('操作失败，请重试');
+                }
+            });
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('确定要删除这个菜品吗？')) {
+                $.ajax({
+                    url: '/merchant/product/delete/' + productId,
+                    type: 'POST',
+                    success: function(result) {
+                        if (result.success) {
+                            alert(result.message);
+                            location.reload();
+                        } else {
+                            alert(result.message);
+                        }
+                    },
+                    error: function() {
+                        alert('删除失败，请重试');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

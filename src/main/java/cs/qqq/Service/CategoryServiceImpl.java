@@ -22,6 +22,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
     
     @Override
+    public List<Category> findAll() {
+        return categoryMapper.findAllCategories();
+    }
+    
+    @Override
     public Category getCategoryById(Long categoryId) {
         return categoryMapper.findCategoryById(categoryId);
     }

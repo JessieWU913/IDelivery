@@ -42,6 +42,16 @@ public interface ProductMapper {
     List<Product> findHotProducts(@Param("limit") Integer limit);
     
     /**
+     * 根据商户ID查询菜品
+     */
+    List<Product> findByMerchantId(@Param("merchantId") Long merchantId);
+    
+    /**
+     * 根据ID查询菜品详情
+     */
+    Product findById(@Param("productId") Long productId);
+    
+    /**
      * 添加菜品
      */
     void addProduct(Product product);
