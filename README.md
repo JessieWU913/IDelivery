@@ -1,5 +1,8 @@
 <<<<<<< HEAD
-# 🍜 外卖点餐系统
+<<<<<<< HEAD
+
+# 🍜 IDelivery外卖点餐系统
+>>>>>>> a9da5dba7cbd7a4986bbd4f5dddccff3fbfd31e8
 
 ## 📁 项目说明
 这是一个基于 Spring Boot + MyBatis + Thymeleaf 的在线点餐系统，支持用户点餐和管理员后台管理。
