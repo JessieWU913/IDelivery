@@ -15,6 +15,8 @@
         <result property="price" column="price"/>
         <result property="productImg" column="product_img"/>
         <result property="stock" column="stock"/>
+        <result property="merchantId" column="merchant_id"/>
+        <result property="merchantName" column="merchant_name"/>
     </resultMap>
 
     <!-- 添加到购物车 -->
@@ -49,11 +51,14 @@
             p.product_name,
             p.price,
             p.product_img,
-            p.stock
+            p.stock,
+            p.merchant_id,
+            m.merchant_name
         FROM t_cart c
         LEFT JOIN t_product p ON c.product_id = p.product_id
+        LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
         WHERE c.user_id = #{userId}
-        ORDER BY c.create_time DESC
+        ORDER BY m.merchant_name, c.create_time DESC
     </select>
 
     <!-- 删除购物车项 -->

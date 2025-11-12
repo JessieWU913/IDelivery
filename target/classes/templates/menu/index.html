@@ -222,12 +222,44 @@
     </div>
 </div>
 
+<!-- 商户筛选区域 -->
+<div class="am-container" style="margin-top: 20px;">
+    <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <label style="font-weight: bold; color: #666;">
+                <i class="am-icon-filter"></i> 筛选商户:
+            </label>
+            <select id="merchantFilter" class="am-form-field" style="width: 200px; border-radius: 5px;">
+                <option value="all">全部商户</option>
+                <option th:each="merchant : ${merchants}" 
+                        th:value="${merchant.merchantId}"
+                        th:text="${merchant.merchantName} + ' (' + ${merchant.address} + ')'">
+                </option>
+            </select>
+            
+            <label style="font-weight: bold; color: #666; margin-left: 20px;">
+                <i class="am-icon-sort"></i> 排序方式:
+            </label>
+            <select id="sortBy" class="am-form-field" style="width: 150px; border-radius: 5px;">
+                <option value="merchant">按商户</option>
+                <option value="sales">按销量</option>
+                <option value="price-asc">价格从低到高</option>
+                <option value="price-desc">价格从高到低</option>
+            </select>
+        </div>
+    </div>
+</div>
+
 <!-- 菜品列表 -->
 <div class="am-container">
     <div class="product-grid" id="productGrid">
         <div th:each="product : ${products}" 
              class="product-card" 
-             th:data-category="${product.categoryId}">
+             th:data-category="${product.categoryId}"
+             th:data-merchant="${product.merchantId}"
+             th:data-merchant-name="${product.merchantName}"
+             th:data-price="${product.price}"
+             th:data-sales="${product.sales}">
             <div style="position: relative;">
                 <img th:if="${product.productImg != null}" 
                      th:src="${product.productImg}" 
@@ -242,6 +274,9 @@
             <div class="product-info">
                 <div class="product-name" th:text="${product.productName}">菜品名称</div>
                 <div class="product-desc" th:text="${product.productDesc}">菜品描述</div>
+                <div style="color: #999; font-size: 12px; margin-top: 5px;">
+                    <i class="am-icon-store"></i> <span th:text="${product.merchantName != null ? product.merchantName : '未知商户'}">商户名称</span>
+                </div>
                 <div class="product-footer">
                     <div>
                         <span class="product-price">
@@ -274,13 +309,32 @@ $(document).ready(function() {
         xhr.setRequestHeader(header, token);
     });
     
+    var currentCategory = 'all';
+    var currentMerchant = 'all';
+    var currentSort = 'merchant';
+    
+    // 初始按商户排序
+    sortProducts();
+    
     // 分类切换
     $('.category-item').click(function() {
         $('.category-item').removeClass('active');
         $(this).addClass('active');
         
-        var categoryId = $(this).data('category');
-        filterProducts(categoryId);
+        currentCategory = $(this).data('category');
+        filterAndSort();
+    });
+    
+    // 商户筛选
+    $('#merchantFilter').change(function() {
+        currentMerchant = $(this).val();
+        filterAndSort();
+    });
+    
+    // 排序方式
+    $('#sortBy').change(function() {
+        currentSort = $(this).val();
+        sortProducts();
     });
     
     // 搜索功能
@@ -291,23 +345,77 @@ $(document).ready(function() {
         
         searchTimer = setTimeout(function() {
             if (keyword === '') {
-                $('.product-card').show();
-                checkEmpty();
+                filterAndSort();
             } else {
                 searchProducts(keyword);
             }
         }, 300);
     });
     
-    // 过滤菜品
-    function filterProducts(categoryId) {
-        if (categoryId === 'all') {
-            $('.product-card').show();
-        } else {
+    // 综合筛选和排序
+    function filterAndSort() {
+        // 先显示所有
+        $('.product-card').show();
+        
+        // 按分类筛选
+        if (currentCategory !== 'all') {
             $('.product-card').hide();
-            $('.product-card[data-category="' + categoryId + '"]').show();
+            $('.product-card[data-category="' + currentCategory + '"]').show();
         }
+        
+        // 按商户筛选
+        if (currentMerchant !== 'all') {
+            $('.product-card:visible').hide();
+            $('.product-card[data-category="' + (currentCategory === 'all' ? '' : currentCategory) + '"][data-merchant="' + currentMerchant + '"]').show();
+            if (currentCategory === 'all') {
+                $('.product-card[data-merchant="' + currentMerchant + '"]').show();
+            }
+        }
+        
+        // 排序
+        sortProducts();
         checkEmpty();
+    }
+    
+    // 排序菜品
+    function sortProducts() {
+        var $products = $('.product-card');
+        var $container = $('#productGrid');
+        
+        $products.sort(function(a, b) {
+            var aVal, bVal;
+            
+            switch(currentSort) {
+                case 'merchant':
+                    // 按商户名称排序
+                    aVal = $(a).data('merchant-name') || '';
+                    bVal = $(b).data('merchant-name') || '';
+                    return aVal.localeCompare(bVal, 'zh-CN');
+                    
+                case 'sales':
+                    // 按销量降序
+                    aVal = parseInt($(a).data('sales')) || 0;
+                    bVal = parseInt($(b).data('sales')) || 0;
+                    return bVal - aVal;
+                    
+                case 'price-asc':
+                    // 价格升序
+                    aVal = parseFloat($(a).data('price')) || 0;
+                    bVal = parseFloat($(b).data('price')) || 0;
+                    return aVal - bVal;
+                    
+                case 'price-desc':
+                    // 价格降序
+                    aVal = parseFloat($(a).data('price')) || 0;
+                    bVal = parseFloat($(b).data('price')) || 0;
+                    return bVal - aVal;
+                    
+                default:
+                    return 0;
+            }
+        });
+        
+        $container.html($products);
     }
     
     // 搜索菜品
@@ -340,15 +448,19 @@ $(document).ready(function() {
                 '<span class="recommend-badge">🔥 推荐</span>' : '';
             var originalPrice = product.originalPrice ? 
                 '<span class="original-price">¥' + product.originalPrice + '</span>' : '';
+            var merchantName = product.merchantName || '未知商户';
             
-            html += '<div class="product-card" data-category="' + product.categoryId + '">';
+            html += '<div class="product-card" data-category="' + product.categoryId + '" data-merchant="' + product.merchantId + '" data-merchant-name="' + merchantName + '" data-price="' + product.price + '" data-sales="' + product.sales + '">';
             html += '  <div style="position: relative;">';
-            html += '    <div class="product-img">' + product.productName.substring(0,1) + '</div>';
+            html += '    <div class="product-img-placeholder">' + product.productName.substring(0,1) + '</div>';
             html += recommendBadge;
             html += '  </div>';
             html += '  <div class="product-info">';
             html += '    <div class="product-name">' + product.productName + '</div>';
             html += '    <div class="product-desc">' + (product.productDesc || '') + '</div>';
+            html += '    <div style="color: #999; font-size: 12px; margin-top: 5px;">';
+            html += '      <i class="am-icon-store"></i> <span>' + merchantName + '</span>';
+            html += '    </div>';
             html += '    <div class="product-footer">';
             html += '      <div>';
             html += '        <span class="product-price">¥' + product.price + originalPrice + '</span>';

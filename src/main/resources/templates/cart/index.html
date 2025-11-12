@@ -201,6 +201,24 @@
             cursor: pointer;
             margin-left: 10px;
         }
+        
+        .merchant-group {
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .merchant-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -216,38 +234,46 @@
         <div th:if="${cartList == null || cartList.size() == 0}" class="empty-cart">
             <div class="empty-cart-icon">🛒</div>
             <h3>购物车是空的</h3>
-            <p>去逛逛，挑选喜欢的商品吧~</p>
+            <p>去逛逛,挑选喜欢的商品吧~</p>
             <button class="back-btn" style="margin-top: 20px;" onclick="location.href='/menu/index'">去选购</button>
         </div>
         
         <div th:if="${cartList != null && cartList.size() > 0}">
-            <div th:each="item : ${cartList}" class="cart-item">
-                <img th:if="${item.productImg != null}" 
-                     th:src="${item.productImg}" 
-                     th:alt="${item.productName}"
-                     class="item-img"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                <div class="item-img-placeholder" 
-                     th:style="${item.productImg != null ? 'display:none;' : ''}"
-                     th:text="${item.productName.substring(0,1)}">菜</div>
-                
-                <div class="item-info">
-                    <div class="item-name" th:text="${item.productName}">商品名称</div>
-                    <div class="item-price">¥<span th:text="${item.price}">0.00</span></div>
+            <!-- 按商户分组显示 -->
+            <div th:each="merchantEntry : ${cartByMerchant}" class="merchant-group">
+                <div class="merchant-header">
+                    <i class="am-icon-store"></i>
+                    <span th:text="${#strings.substringAfter(merchantEntry.key, '_')}">商户名称</span>
                 </div>
                 
-                <div class="quantity-control">
-                    <button class="qty-btn" th:onclick="'updateQuantity(' + ${item.cartId} + ', ' + ${item.quantity - 1} + ')'">-</button>
-                    <input type="number" class="qty-input" th:value="${item.quantity}" 
-                           th:id="'qty-' + ${item.cartId}" readonly />
-                    <button class="qty-btn" th:onclick="'updateQuantity(' + ${item.cartId} + ', ' + ${item.quantity + 1} + ')'">+</button>
+                <div th:each="item : ${merchantEntry.value}" class="cart-item">
+                    <img th:if="${item.productImg != null}" 
+                         th:src="${item.productImg}" 
+                         th:alt="${item.productName}"
+                         class="item-img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                    <div class="item-img-placeholder" 
+                         th:style="${item.productImg != null ? 'display:none;' : ''}"
+                         th:text="${item.productName.substring(0,1)}">菜</div>
+                    
+                    <div class="item-info">
+                        <div class="item-name" th:text="${item.productName}">商品名称</div>
+                        <div class="item-price">¥<span th:text="${item.price}">0.00</span></div>
+                    </div>
+                    
+                    <div class="quantity-control">
+                        <button class="qty-btn" th:onclick="'updateQuantity(' + ${item.cartId} + ', ' + ${item.quantity - 1} + ')'">-</button>
+                        <input type="number" class="qty-input" th:value="${item.quantity}" 
+                               th:id="'qty-' + ${item.cartId}" readonly />
+                        <button class="qty-btn" th:onclick="'updateQuantity(' + ${item.cartId} + ', ' + ${item.quantity + 1} + ')'">+</button>
+                    </div>
+                    
+                    <div class="item-total">
+                        ¥<span th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2)}">0.00</span>
+                    </div>
+                    
+                    <button class="delete-btn" th:onclick="'deleteItem(' + ${item.cartId} + ')'">删除</button>
                 </div>
-                
-                <div class="item-total">
-                    ¥<span th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2)}">0.00</span>
-                </div>
-                
-                <button class="delete-btn" th:onclick="'deleteItem(' + ${item.cartId} + ')'">删除</button>
             </div>
             
             <div class="cart-summary">

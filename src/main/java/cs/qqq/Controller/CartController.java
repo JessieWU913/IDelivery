@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/cart")
@@ -33,6 +32,13 @@ public class CartController {
         
         List<Cart> cartList = cartService.getCartList(user.getUserId().intValue());
         
+        // 按商户分组
+        Map<String, List<Cart>> cartByMerchant = new LinkedHashMap<>();
+        for (Cart cart : cartList) {
+            String merchantKey = cart.getMerchantId() + "_" + (cart.getMerchantName() != null ? cart.getMerchantName() : "未知商户");
+            cartByMerchant.computeIfAbsent(merchantKey, k -> new ArrayList<>()).add(cart);
+        }
+        
         // 计算总价
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Cart cart : cartList) {
@@ -40,6 +46,7 @@ public class CartController {
             totalPrice = totalPrice.add(itemTotal);
         }
         
+        model.addAttribute("cartByMerchant", cartByMerchant);
         model.addAttribute("cartList", cartList);
         model.addAttribute("totalPrice", totalPrice);
         

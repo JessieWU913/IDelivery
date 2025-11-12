@@ -18,4 +18,7 @@ public class Cart {
     private BigDecimal price;      // 商品单价
     private String productImg;     // 商品图片
     private Integer stock;         // 商品库存
+    private Long merchantId;       // 商户ID
+    private String merchantName;   // 商户名称
 }
+

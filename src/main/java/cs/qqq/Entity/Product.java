@@ -55,4 +55,7 @@ public class Product {
     
     /** 分类名称(关联查询时使用) */
     private String categoryName;
+    
+    /** 商户名称(关联查询时使用) */
+    private String merchantName;
 }

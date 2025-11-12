@@ -8,7 +8,7 @@
     <insert id="saveUser">
     insert into sys_user
     <trim prefix="(" suffix=")" suffixOverrides=",">
-        <if test="userName != null and userName != ''">user_name,</if>
+        <if test="userName != null and userName != ''">username,</if>
         <if test="password != null and password != ''">password,</if>
         <if test="roleId != null">role_id,</if>
         <if test="phonenumber != null">phonenumber,</if>
@@ -36,7 +36,7 @@
         update sys_user set status=#{status} where user_id=#{userId}
     </update>
     <update id="updateUser1">
-        update sys_user set role_id=#{roleId},user_name=#{userName},email=#{email},phonenumber=#{phonenumber},password=#{password},update_by=#{updateBy},update_time=#{updateTime},remark=#{remark},pic=#{pic}
+        update sys_user set role_id=#{roleId},username=#{userName},email=#{email},phonenumber=#{phonenumber},password=#{password},update_by=#{updateBy},update_time=#{updateTime},remark=#{remark},pic=#{pic}
         where user_id=#{userId}
     </update>
 
@@ -51,7 +51,7 @@
         where user_id = #{id}
     </delete>
     <select id="findUserByUsernameAndPassword" resultType="cs.qqq.Entity.SysUser">
-        select * from sys_user where user_name=#{userName} and password=#{password}
+        select * from sys_user where username=#{userName} and password=#{password}
     </select>
     <select id="findUserById" resultType="cs.qqq.Entity.SysUser">
         select * from sys_user where user_id=#{userId}
@@ -62,7 +62,7 @@
         JOIN sys_role r ON u.role_id = r.role_id
         WHERE r.role_id = #{roleId}
         <if test="userName != null and userName!=''">
-            AND u.user_name LIKE CONCAT('%',#{userName},'%')
+            AND u.username LIKE CONCAT('%',#{userName},'%')
         </if>
         <if test="phonenumber != null and phonenumber !=''">
             AND u.phonenumber = #{phonenumber}

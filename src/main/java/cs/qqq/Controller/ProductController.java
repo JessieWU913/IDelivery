@@ -2,8 +2,10 @@ package cs.qqq.Controller;
 
 import cs.qqq.Entity.Category;
 import cs.qqq.Entity.Product;
+import cs.qqq.Entity.Merchant;
 import cs.qqq.Service.CategoryService;
 import cs.qqq.Service.ProductService;
+import cs.qqq.Service.MerchantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +27,9 @@ public class ProductController {
     @Autowired
     private CategoryService categoryService;
     
+    @Autowired
+    private MerchantService merchantService;
+    
     /**
      * 跳转到菜单首页
      */
@@ -36,10 +41,13 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         // 获取推荐菜品
         List<Product> recommendProducts = productService.getRecommendProducts();
+        // 获取所有营业中的商户
+        List<Merchant> merchants = merchantService.findAllActive();
         
         model.addAttribute("categories", categories);
         model.addAttribute("products", products);
         model.addAttribute("recommendProducts", recommendProducts);
+        model.addAttribute("merchants", merchants);
         
         return "menu/index";
     }
