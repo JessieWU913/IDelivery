@@ -110,7 +110,7 @@
         </div>
     </div>
 
-    <script th:src="@{/back/js/jquery.min.js}"></script>
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
     <script th:src="@{/back/js/bootstrap.js}"></script>
     <script>
         var token = $("meta[name='_csrf']").attr("content");
@@ -131,8 +131,13 @@
                 originalPrice: $('#originalPrice').val() || $('#price').val(),
                 stock: $('#stock').val(),
                 productImg: $('#productImg').val() || '/img/product/default.jpg',
-                status: $('#status').val()
+                status: $('#status').val(),
+                isRecommend: '0'  // 默认不推荐
             };
+            
+            // 调试：打印产品数据
+            console.log('提交的产品数据:', product);
+            console.log('JSON字符串:', JSON.stringify(product));
             
             $.ajax({
                 url: '/merchant/product/add',
@@ -140,6 +145,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify(product),
                 success: function(result) {
+                    console.log('服务器响应:', result);
                     if (result.success) {
                         alert('添加成功！');
                         window.location.href = '/merchant/index';
@@ -147,8 +153,10 @@
                         alert('添加失败：' + result.message);
                     }
                 },
-                error: function() {
-                    alert('添加失败，请重试');
+                error: function(xhr, status, error) {
+                    console.error('AJAX错误:', status, error);
+                    console.error('响应内容:', xhr.responseText);
+                    alert('添加失败，请重试。错误信息：' + error);
                 }
             });
         });

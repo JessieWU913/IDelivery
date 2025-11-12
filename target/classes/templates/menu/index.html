@@ -238,6 +238,13 @@
             </select>
             
             <label style="font-weight: bold; color: #666; margin-left: 20px;">
+                <i class="am-icon-search"></i> 搜索商户:
+            </label>
+            <input type="text" id="merchantSearchInput" class="am-form-field" 
+                   placeholder="输入商户名称..." 
+                   style="width: 200px; border-radius: 5px; padding: 8px 12px;">
+            
+            <label style="font-weight: bold; color: #666; margin-left: 20px;">
                 <i class="am-icon-sort"></i> 排序方式:
             </label>
             <select id="sortBy" class="am-form-field" style="width: 150px; border-radius: 5px;">
@@ -312,6 +319,7 @@ $(document).ready(function() {
     var currentCategory = 'all';
     var currentMerchant = 'all';
     var currentSort = 'merchant';
+    var merchantSearchKeyword = '';
     
     // 初始按商户排序
     sortProducts();
@@ -328,7 +336,28 @@ $(document).ready(function() {
     // 商户筛选
     $('#merchantFilter').change(function() {
         currentMerchant = $(this).val();
+        // 如果选择了具体商户，清空搜索框
+        if (currentMerchant !== 'all') {
+            $('#merchantSearchInput').val('');
+            merchantSearchKeyword = '';
+        }
         filterAndSort();
+    });
+    
+    // 商户搜索功能
+    var merchantSearchTimer;
+    $('#merchantSearchInput').on('input', function() {
+        clearTimeout(merchantSearchTimer);
+        merchantSearchKeyword = $(this).val().trim();
+        
+        merchantSearchTimer = setTimeout(function() {
+            // 如果有搜索关键词，重置商户下拉框为"全部"
+            if (merchantSearchKeyword !== '') {
+                $('#merchantFilter').val('all');
+                currentMerchant = 'all';
+            }
+            filterAndSort();
+        }, 300);
     });
     
     // 排序方式
@@ -363,13 +392,22 @@ $(document).ready(function() {
             $('.product-card[data-category="' + currentCategory + '"]').show();
         }
         
-        // 按商户筛选
+        // 按商户筛选 - 支持下拉框选择和搜索框搜索
         if (currentMerchant !== 'all') {
+            // 使用下拉框筛选
             $('.product-card:visible').hide();
             $('.product-card[data-category="' + (currentCategory === 'all' ? '' : currentCategory) + '"][data-merchant="' + currentMerchant + '"]').show();
             if (currentCategory === 'all') {
                 $('.product-card[data-merchant="' + currentMerchant + '"]').show();
             }
+        } else if (merchantSearchKeyword !== '') {
+            // 使用搜索框筛选商户
+            $('.product-card:visible').each(function() {
+                var merchantName = $(this).data('merchant-name') || '';
+                if (merchantName.toLowerCase().indexOf(merchantSearchKeyword.toLowerCase()) === -1) {
+                    $(this).hide();
+                }
+            });
         }
         
         // 排序

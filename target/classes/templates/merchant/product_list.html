@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    <script th:src="@{/back/js/jquery.min.js}"></script>
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
     <script th:src="@{/back/js/bootstrap.js}"></script>
     <script>
         var token = $("meta[name='_csrf']").attr("content");
@@ -106,11 +106,13 @@
         });
 
         function deleteProduct(productId) {
+            console.log('尝试删除菜品ID:', productId);
             if (confirm('确定要删除这个菜品吗？删除后无法恢复！')) {
                 $.ajax({
                     url: '/merchant/product/delete/' + productId,
                     type: 'POST',
                     success: function(result) {
+                        console.log('删除响应:', result);
                         if (result.success) {
                             alert('删除成功');
                             location.reload();
@@ -118,8 +120,10 @@
                             alert('删除失败：' + result.message);
                         }
                     },
-                    error: function() {
-                        alert('删除失败，请重试');
+                    error: function(xhr, status, error) {
+                        console.error('删除AJAX错误:', status, error);
+                        console.error('响应内容:', xhr.responseText);
+                        alert('删除失败，请重试。错误信息：' + error);
                     }
                 });
             }

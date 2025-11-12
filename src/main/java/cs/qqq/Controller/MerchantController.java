@@ -109,19 +109,28 @@ public class MerchantController {
     public Map<String, Object> addProduct(@RequestBody Product product, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         
+        System.out.println("=== 添加菜品请求 ===");
+        System.out.println("接收到的产品数据: " + product);
+        
         SysUser currentUser = (SysUser) session.getAttribute("user");
         if (currentUser == null) {
+            System.out.println("错误: 用户未登录");
             result.put("success", false);
             result.put("message", "请先登录");
             return result;
         }
         
+        System.out.println("当前用户: " + currentUser.getUserName());
+        
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         if (merchant == null) {
+            System.out.println("错误: 用户没有开通商户");
             result.put("success", false);
             result.put("message", "您还没有开通商户");
             return result;
         }
+        
+        System.out.println("商户信息: " + merchant.getMerchantName() + " (ID: " + merchant.getMerchantId() + ")");
         
         // 设置商户ID
         product.setMerchantId(merchant.getMerchantId());
@@ -134,7 +143,11 @@ public class MerchantController {
             product.setSales(0);
         }
         
+        System.out.println("准备插入的产品数据: " + product);
+        
         int count = productService.addProduct(product);
+        System.out.println("插入结果: " + (count > 0 ? "成功" : "失败") + ", 影响行数: " + count);
+        
         if (count > 0) {
             result.put("success", true);
             result.put("message", "添加成功");
@@ -143,6 +156,7 @@ public class MerchantController {
             result.put("message", "添加失败");
         }
         
+        System.out.println("返回结果: " + result);
         return result;
     }
     
@@ -178,24 +192,36 @@ public class MerchantController {
     public Map<String, Object> updateProduct(@RequestBody Product product, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         
+        System.out.println("=== 更新菜品请求 ===");
+        System.out.println("接收到的产品数据: " + product);
+        
         SysUser currentUser = (SysUser) session.getAttribute("user");
         if (currentUser == null) {
+            System.out.println("错误: 用户未登录");
             result.put("success", false);
             result.put("message", "请先登录");
             return result;
         }
+        
+        System.out.println("当前用户: " + currentUser.getUserName());
         
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         Product existProduct = productService.findById(product.getProductId());
         
         // 验证权限
         if (existProduct == null || !existProduct.getMerchantId().equals(merchant.getMerchantId())) {
+            System.out.println("错误: 无权修改此菜品");
             result.put("success", false);
             result.put("message", "无权修改此菜品");
             return result;
         }
         
+        System.out.println("原产品数据: " + existProduct);
+        System.out.println("准备更新的数据: " + product);
+        
         int count = productService.updateProduct(product);
+        System.out.println("更新结果: " + (count > 0 ? "成功" : "失败") + ", 影响行数: " + count);
+        
         if (count > 0) {
             result.put("success", true);
             result.put("message", "更新成功");
@@ -204,6 +230,7 @@ public class MerchantController {
             result.put("message", "更新失败");
         }
         
+        System.out.println("返回结果: " + result);
         return result;
     }
     
@@ -215,24 +242,35 @@ public class MerchantController {
     public Map<String, Object> deleteProduct(@PathVariable Long productId, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         
+        System.out.println("=== 删除菜品请求 ===");
+        System.out.println("要删除的菜品ID: " + productId);
+        
         SysUser currentUser = (SysUser) session.getAttribute("user");
         if (currentUser == null) {
+            System.out.println("错误: 用户未登录");
             result.put("success", false);
             result.put("message", "请先登录");
             return result;
         }
+        
+        System.out.println("当前用户: " + currentUser.getUserName());
         
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         Product product = productService.findById(productId);
         
         // 验证权限
         if (product == null || !product.getMerchantId().equals(merchant.getMerchantId())) {
+            System.out.println("错误: 无权删除此菜品或菜品不存在");
             result.put("success", false);
             result.put("message", "无权删除此菜品");
             return result;
         }
         
+        System.out.println("准备删除菜品: " + product.getProductName());
+        
         int count = productService.deleteProduct(productId);
+        System.out.println("删除结果: " + (count > 0 ? "成功" : "失败") + ", 影响行数: " + count);
+        
         if (count > 0) {
             result.put("success", true);
             result.put("message", "删除成功");
@@ -241,6 +279,7 @@ public class MerchantController {
             result.put("message", "删除失败");
         }
         
+        System.out.println("返回结果: " + result);
         return result;
     }
     
