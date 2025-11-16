@@ -1,238 +1,253 @@
-# IDelivery 多商户外卖点餐系统
+# IDelivery 外卖点餐系统 - 部署说明
 
-## 项目简介
-这是一个基于 Spring Boot + MyBatis + Thymeleaf 的多商户在线外卖点餐系统，支持用户点餐、商户管理和后台管理三大核心功能模块。
+## 一、环境要求
 
-## 功能特性
+### 1. 必需软件
+- **JDK 1.8** 或更高版本
+- **Maven 3.x**
+- **MySQL 5.7** 或更高版本
 
-### 用户端
-- 用户登录/注册
-- 按商户筛选浏览菜品
-- 按分类筛选菜品（7大分类）
-- 菜品搜索功能
-- 商户搜索功能（输入商户名称快速筛选）
-- 购物车管理（按商户分组显示）
-- 多种排序方式（按商户、销量、价格）
-
-### 商户端
-- 商户登录
-- 商户信息管理
-- 菜品管理（添加、编辑、删除菜品）
-- 查看商户统计数据
-- 菜品列表查看
-
-### 管理端
-- 用户管理
-- 角色权限管理
-- 商户审核管理
-- 系统内容管理
-
-## 技术栈
-- Spring Boot 2.1.3
-- MyBatis 2.0.0
-- MySQL 5.7+
-- Thymeleaf 模板引擎
-- Spring Security 安全框架
-- Druid 数据库连接池
-- AmazeUI 前端框架
-- Bootstrap 后台管理界面
-
-## 环境要求
-- JDK 1.8 或更高版本
-- Maven 3.x
-- MySQL 5.7 或更高版本
-
-## 快速开始
-
-### 1. 数据库初始化
-
-使用 MySQL 命令行：
+### 2. 检查环境
 ```bash
-mysql -u root -p
-source C:\Users\bless\Desktop\whu\Large_software\waimai\database.sql
+# 检查 Java 版本
+java -version
+
+# 检查 Maven 版本
+mvn -version
+
+# 检查 MySQL 是否运行
+mysql --version
 ```
 
-或使用 MySQL Workbench / Navicat 等工具执行 `database.sql` 脚本。
+---
 
-### 2. 配置数据库连接
+## 二、部署步骤
 
-编辑 `src/main/resources/application.properties`，修改数据库连接信息：
+### 步骤 1：获取项目文件
+将整个项目文件夹复制到你的电脑上
+```bash
+git clone https://github.com/JessieWU913/IDelivery.git
+```
+
+### 步骤 2：创建数据库
+1. 启动 MySQL 数据库
+2. 使用 MySQL 客户端（Navicat、MySQL Workbench 或命令行）连接数据库
+3. 创建test数据库：(注意一定要名为test！！！)
+   ```sql
+   CREATE DATABASE test CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+   ```
+
+### 步骤 3：导入数据
+按顺序执行项目根目录下的 SQL 文件：
+
+1. **打开 `database_init_all.sql` 文件**
+2. **复制全部内容到test中**
+3. **在 MySQL 客户端中执行**（选择 `test` 数据库）
+
+这会创建以下表：
+- `sys_user` - 用户表
+- `sys_role` - 角色表
+- `t_address` - 地址管理表
+- `t_cart` - 购物车表
+- `t_category` - 菜品分类表
+- `t_merchant` - 商家表
+- `t_order` - 订单表
+- `t_order_item` - 订单项表
+- `t_payment` - 支付项表
+- `t_product` - 菜品表
+
+### 步骤 4：配置数据库连接
+打开 `src/main/resources/application.properties`，修改以下配置：
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/test?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8&useSSL=false
+# 数据库连接（根据你的实际情况修改）
+spring.datasource.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
 spring.datasource.username=root
 spring.datasource.password=你的MySQL密码
+
+# 端口（如果8080被占用，可以改成8081等）
+server.port=8080
 ```
 
-### 3. 启动项目
+⚠️ **重要**：将 `spring.datasource.password` 改成你自己的 MySQL 密码！
 
-方法一：使用 IDEA
-1. 打开项目
-2. 找到 `cs.qqq.qqqExam` 主类
-3. 右键 -> Run 'qqqExam'
+### 步骤 5：复制图片资源（可选）
+如果需要显示菜品图片：
+1. 将 `img/product/` 文件夹中的图片
+2. 复制到 `src/main/resources/static/img/product/` 目录下
 
-方法二：使用 Maven 命令
+**注意**：目前只有宫保鸡丁有图片（gongbao.jpg），其他菜品会显示占位符。
+
+### 步骤 6：启动应用
+在项目根目录下打开命令行，执行：
+
 ```bash
-cd C:\Users\bless\Desktop\whu\Large_software\waimai
+# Windows PowerShell 或 CMD
 mvn spring-boot:run
-```
 
-方法三：打包运行
-```bash
+# 或者先打包再运行
 mvn clean package
 java -jar target/qqq_qimo-1.0-SNAPSHOT.jar
 ```
 
-### 4. 访问应用
+## 三、访问系统
 
-启动成功后，浏览器访问：http://localhost:8080
+### 1. 打开浏览器
+访问：`http://localhost:8080`
 
-## 测试账号
+### 2. 默认账号
+系统提供以下角色的账号：
 
-系统预置了以下测试账号：
+#### 普通用户（点餐）
+- **账号**：`user001`
+- **密码**：`123456`
+- **功能**：浏览菜单、添加购物车、下单
 
-| 用户名 | 密码 | 角色 | 登录后跳转 |
-|--------|------|------|------------|
-| admin | 123456 | 超级管理员 | 后台管理页面 |
-| manager | 123456 | 普通管理员 | 后台管理页面 |
-| merchant001 | 123456 | 商户（川香阁） | 商户管理中心 |
-| merchant002 | 123456 | 商户（粤味轩） | 商户管理中心 |
-| merchant003 | 123456 | 商户（江南小厨） | 商户管理中心 |
-| user001 | 123456 | 普通用户 | 菜单浏览页面 |
+#### 超级管理员（后台管理）
+- **账号**：`admin`
+- **密码**：`123456`
+- **功能**：用户管理、角色管理、菜品管理
 
-注意：首次登录后建议修改默认密码。
+#### 商家（上架菜品/出餐）
+- **账号**：`merchant` / `merchant001` / `merchant002` / `merchant003`
+- **密码**：均为`123456`
+- **功能**：开店、上架下架菜品、接单出餐
 
-## 数据库表结构
-
-### 核心表说明
-
-**sys_role** - 角色表
-- role_id: 角色ID（主键）
-- role_name: 角色名称
-- role_sort: 显示顺序
-- status: 角色状态
-- create_time: 创建时间
-
-**sys_user** - 用户表
-- user_id: 用户ID（主键）
-- role_id: 角色ID（外键）
-- user_name: 用户账号
-- password: 密码
-- email: 邮箱
-- phonenumber: 手机号
-- status: 账号状态
-- create_time: 创建时间
-
-**t_merchant** - 商户表
-- merchant_id: 商户ID（主键）
-- user_id: 关联用户ID（外键）
-- merchant_name: 商户名称
-- description: 商户描述
-- logo: 商户Logo
-- address: 商户地址
-- phone: 联系电话
-- business_hours: 营业时间
-- status: 营业状态
-- rating: 评分
-- sales: 销量
-
-**t_product** - 菜品表
-- product_id: 菜品ID（主键）
-- merchant_id: 商户ID（外键）
-- category_id: 分类ID（外键）
-- product_name: 菜品名称
-- product_desc: 菜品描述
-- product_img: 菜品图片
-- price: 价格
-- original_price: 原价
-- stock: 库存
-- sales: 销量
-- status: 上架状态
-- is_recommend: 是否推荐
-
-**t_category** - 分类表
-- category_id: 分类ID（主键）
-- category_name: 分类名称
-- category_sort: 排序
-
-**t_cart** - 购物车表
-- cart_id: 购物车ID（主键）
-- user_id: 用户ID（外键）
-- product_id: 菜品ID（外键）
-- quantity: 数量
-- create_time: 添加时间
-
-## 常见问题
-
-### 1. 连接数据库失败
-- 检查 MySQL 服务是否启动
-- 确认用户名和密码是否正确
-- 确认数据库 `test` 是否已创建
-- 检查端口 3306 是否被占用
-
-### 2. 启动报错端口被占用
-- 检查 8080 端口是否被占用
-- 可以在 `application.properties` 中修改端口：`server.port=8081`
-
-### 3. 登录失败
-- 确认数据库中是否有用户数据
-- 检查用户名和密码是否正确（区分大小写）
-- 查看控制台日志获取详细错误信息
-
-### 4. 商户菜品操作失败
-- 按 F12 打开浏览器开发者工具查看控制台错误
-- 检查 VS Code 终端查看后端日志
-- 确认已使用商户账号登录
-
-### 5. 页面样式错误
-- 清除浏览器缓存（Ctrl + F5 强制刷新）
-- 检查静态资源文件是否完整
-
-## 项目结构
-
-```
-waimai/
-├── src/main/
-│   ├── java/cs/qqq/
-│   │   ├── Config/          # 配置类（安全、数据源等）
-│   │   ├── Controller/      # 控制器
-│   │   ├── Entity/          # 实体类
-│   │   ├── Mapper/          # MyBatis 映射接口
-│   │   └── Service/         # 业务逻辑层
-│   └── resources/
-│       ├── mapper/          # MyBatis XML 映射文件
-│       ├── static/          # 静态资源（CSS、JS、图片）
-│       │   ├── assets/      # 用户端资源
-│       │   ├── back/        # 后台管理资源
-│       │   └── user/        # 用户页面资源
-│       ├── templates/       # Thymeleaf 模板
-│       │   ├── back/        # 后台管理页面
-│       │   ├── merchant/    # 商户管理页面
-│       │   ├── menu/        # 用户菜单页面
-│       │   ├── cart/        # 购物车页面
-│       │   ├── role/        # 角色管理页面
-│       │   └── user/        # 用户管理页面
-│       └── application.properties  # 应用配置
-├── pom.xml                  # Maven 配置
-└── database.sql             # 数据库初始化脚本
-```
-
-## 更新日志
-
-### 2025-11-12
-- 修复商户菜品添加、编辑、删除功能
-- 添加商户搜索功能
-- 优化购物车按商户分组显示
-- 修复 jQuery 路径问题
-- 添加详细的调试日志
-
-### 2025-11-10
-- 完成多商户系统架构
-- 实现商户登录和权限控制
-- 添加商户筛选和排序功能
-- 优化用户菜单浏览体验
+#### 骑手（接单送餐）
+- **账号**：`deliver`
+- **密码**：`123456`
+- **功能**：接单、送餐
 
 ---
 
-WHU 大型应用软件设计课程项目
-最后更新：2025-11-12
+## 四、功能说明
+
+### 普通用户功能
+1. **登录后自动跳转到菜单页面**
+2. **菜品分类浏览**：点击分类按钮查看不同类别菜品
+3. **搜索菜品**：使用搜索框快速找到想要的菜品
+4. **加入购物车**：点击"加入购物车"按钮
+5. **查看购物车**：点击"购物车"按钮查看已选菜品
+6. **查看订单**：点击"订单"按钮查看已下单订单状态
+7. **调整数量**：在购物车中可以增减数量或删除商品
+8. **下单**：在购物车界面下单，并支付订单
+9. **订单状态追踪**：下单完成后在订单页面可查看当前订单状态。送达后可确认收货
+10. **地址管理**：下单时可进行个人地址管理
+11. **退出登录**：在主界面可退出登录
+
+### 管理员功能
+1. **登录后跳转到后台管理页面**
+2. **用户管理**：查看、添加、编辑、删除用户、商家、骑手和菜品等
+3. **角色管理**：管理用户角色权限
+4. **菜品管理**：下架商家的菜品
+
+### 商家功能
+1. **登录后自动跳转到商店管理页面**
+2. **菜品管理**：可以添加或删除菜品，设置菜品状态和数量
+3. **店铺信息管理**：可设置店铺营业状态，并查看店铺评分和信息
+4. **查看订单**：点击"订单"按钮查看已下单订单
+5. **订单状态追踪**：接单后在订单页面可查看当前订单状态。做完后可出餐
+6. **退出登录**：在主界面可退出登录
+
+### 骑手功能
+1. **登录后自动跳转到骑手接单页面**
+2. **查看订单**：查看已出餐订单信息
+3. **接单送餐**：可以选择订单接单，送达后点击送达
+4. **退出登录**：在主界面可退出登录
+
+---
+
+## 五、常见问题
+
+### ❌ 问题 1：端口 8080 已被占用
+**错误信息**：`Address already in use: bind`
+
+**解决方案**：
+1. 修改 `application.properties` 中的 `server.port=8081`
+2. 或者杀掉占用 8080 的进程：
+   ```bash
+   # Windows
+   netstat -ano | findstr :8080
+   taskkill /F /PID <进程ID>
+   ```
+
+### ❌ 问题 2：数据库连接失败
+**错误信息**：`Access denied for user 'root'@'localhost'`
+
+**解决方案**：
+1. 检查 `application.properties` 中的用户名密码是否正确
+2. 确保 MySQL 服务已启动
+3. 确认数据库 `test` 已创建（名字必须为test）
+
+### ❌ 问题 3：登录后出现 500 错误
+**错误信息**：`Unknown column 'user_name' in 'where clause'`
+
+**解决方案**：
+1. 确保 `database_init_all.sql` 完整执行（只需要执行这一个）
+2. 检查 `sys_user` 表的字段名是 `username`（不是 `user_name`）
+3. 重启应用：
+   ```bash
+   # Ctrl+C 停止应用
+   mvn clean spring-boot:run
+   ```
+
+### ❌ 问题 4：菜品图片不显示
+**解决方案**：
+1. 确保已将图片复制到 `src/main/resources/static/img/product/`
+2. 图片文件名要与数据库中 `product_img` 字段匹配
+3. 当前只有宫保鸡丁有图片，其他显示占位符是正常的
+
+### ❌ 问题 5：添加购物车时返回 403 错误
+**错误信息**：`Forbidden`
+
+**解决方案**：
+- 这是正常的，系统已配置 CSRF 防护
+- 前端页面已自动处理 CSRF token，刷新页面后重试即可
+
+---
+
+## 六、项目结构说明
+
+```
+waimai/
+├── src/
+│   └── main/
+│       ├── java/cs/qqq/
+│       │   ├── Controller/      # 控制器层（处理请求）
+│       │   │   ├── LoginController.java
+│       │   │   ├── ProductController.java  # 菜单
+│       │   │   ├── CartController.java     # 购物车
+│       │   │   └── ...
+│       │   ├── Service/         # 业务逻辑层
+│       │   ├── Mapper/          # 数据访问层
+│       │   ├── Entity/          # 实体类
+│       │   └── Config/          # 配置类
+│       └── resources/
+│           ├── application.properties  # 配置文件 ⚠️ 需要修改
+│           ├── mapper/          # MyBatis SQL 映射文件
+│           ├── static/          # 静态资源（CSS、JS、图片）
+│           └── templates/       # 前端页面
+├── database_init_all.sql       # 数据库初始化脚本 ⚠️ 必须执行
+└── pom.xml                     # Maven 依赖配置
+```
+
+---
+
+## 七、技术栈
+
+- **后端框架**：Spring Boot 2.1.3
+- **ORM 框架**：MyBatis 2.0.0
+- **模板引擎**：Thymeleaf
+- **数据库**：MySQL 5.7+
+- **前端框架**：AmazeUI
+- **安全框架**：Spring Security
+
+---
+
+## 八、联系与支持
+
+如果部署过程中遇到问题：
+1. 检查本文档的"常见问题"部分
+2. 确保所有环境配置正确
+3. 查看控制台错误信息
+4. 联系项目作者获取帮助

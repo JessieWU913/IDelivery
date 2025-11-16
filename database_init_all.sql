@@ -52,7 +52,7 @@ INSERT INTO `sys_user` (`username`, `password`, `real_name`, `phone`, `email`, `
                                                                                                         ('admin', '123456', '超级管理员', '13800138000', 'admin@waimai.com', 1, '1'),
                                                                                                         ('manager', '123456', '系统管理员', '13800138001', 'manager@waimai.com', 2, '1'),
                                                                                                         ('merchant', '123456', '商家001', '13800138002', 'merchant@waimai.com', 3, '1'),
-                                                                                                        ('delivery', '123456', '配送员001', '13800138003', 'delivery@waimai.com', 4, '1'),
+                                                                                                        ('deliver', '123456', '配送员001', '13800138003', 'deliver@waimai.com', 4, '1'),
                                                                                                         ('user001', '123456', '普通用户', '13800138004', 'user001@waimai.com', 5, '1'),
                                                                                                         ('merchant001', '123456', '商户001', '13800000001', 'merchant001@test.com', 3, '1'),
                                                                                                         ('merchant002', '123456', '商户002', '13800000002', 'merchant002@test.com', 3, '1'),
@@ -411,5 +411,5 @@ SELECT '支付记录表 (t_payment)' AS '表名', '已创建' AS '状态';
 
 
 SELECT '=== 初始化完成 ===' AS info;
-SELECT '测试账号：admin/manager/merchant/delivery/user001，密码：123456' AS message;
+SELECT '测试账号：admin/manager/merchant/deliver/user001，密码：123456' AS message;
 SELECT '商户账号：merchant001/merchant002/merchant003，密码：123456' AS message;
