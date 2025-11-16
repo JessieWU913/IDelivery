@@ -255,10 +255,14 @@
                     实付：¥<span th:text="${#numbers.formatDecimal(order.actualAmount, 1, 2)}">0.00</span>
                 </div>
                 <div class="order-actions">
-                    <button class="btn btn-primary"
+                    <button th:if="${acceptedOrderIds == null || !acceptedOrderIds.contains(order.orderId)}"
+                            class="btn btn-primary"
                             th:onclick="'acceptOrder(' + ${order.orderId} + ')'">接单</button>
-                    <button class="btn btn-success"
+                    <button th:if="${acceptedOrderIds != null && acceptedOrderIds.contains(order.orderId)}"
+                            class="btn btn-success"
                             th:onclick="'completeDelivery(' + ${order.orderId} + ')'">已送达</button>
+                    <span th:if="${acceptedOrderIds != null && acceptedOrderIds.contains(order.orderId)}"
+                          style="color: #28a745; font-weight: bold; margin-left: 10px;">✓ 已接单</span>
                 </div>
             </div>
         </div>

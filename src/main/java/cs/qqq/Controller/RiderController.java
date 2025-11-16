@@ -43,6 +43,14 @@ public class RiderController {
         // 查询所有已出餐的订单（状态为delivering）
         List<Order> availableOrders = orderService.getOrdersByStatus("delivering");
         
+        // 获取骑手已接单的订单ID列表
+        @SuppressWarnings("unchecked")
+        java.util.Set<Long> acceptedOrders = (java.util.Set<Long>) session.getAttribute("riderAcceptedOrders");
+        if (acceptedOrders == null) {
+            acceptedOrders = new java.util.HashSet<>();
+            session.setAttribute("riderAcceptedOrders", acceptedOrders);
+        }
+        
         // 为每个订单加载订单明细
         for (Order order : availableOrders) {
             Order orderDetail = orderService.getOrderDetail(order.getOrderId());
@@ -53,6 +61,7 @@ public class RiderController {
 
         model.addAttribute("availableOrders", availableOrders);
         model.addAttribute("rider", currentUser);
+        model.addAttribute("acceptedOrderIds", acceptedOrders);
 
         return "rider/index";
     }
@@ -93,7 +102,23 @@ public class RiderController {
                 return result;
             }
 
-            // 这里可以根据需要添加骑手ID字段到订单表
+            // 在session中记录骑手接单的订单ID列表
+            @SuppressWarnings("unchecked")
+            java.util.Set<Long> acceptedOrders = (java.util.Set<Long>) session.getAttribute("riderAcceptedOrders");
+            if (acceptedOrders == null) {
+                acceptedOrders = new java.util.HashSet<>();
+                session.setAttribute("riderAcceptedOrders", acceptedOrders);
+            }
+            
+            // 检查是否已经接单
+            if (acceptedOrders.contains(orderId)) {
+                result.put("success", false);
+                result.put("message", "您已经接单了此订单");
+                return result;
+            }
+            
+            // 记录接单
+            acceptedOrders.add(orderId);
             result.put("success", true);
             result.put("message", "接单成功");
         } catch (Exception e) {
@@ -127,6 +152,15 @@ public class RiderController {
         }
 
         try {
+            // 检查是否已接单
+            @SuppressWarnings("unchecked")
+            java.util.Set<Long> acceptedOrders = (java.util.Set<Long>) session.getAttribute("riderAcceptedOrders");
+            if (acceptedOrders == null || !acceptedOrders.contains(orderId)) {
+                result.put("success", false);
+                result.put("message", "请先接单才能完成送达");
+                return result;
+            }
+            
             Order order = orderService.getOrderDetail(orderId);
             if (order == null) {
                 result.put("success", false);
@@ -142,6 +176,10 @@ public class RiderController {
 
             // 完成送达
             boolean success = orderService.confirmOrder(orderId);
+            if (success) {
+                // 从接单列表中移除
+                acceptedOrders.remove(orderId);
+            }
             result.put("success", success);
             result.put("message", success ? "送达成功" : "送达失败");
         } catch (Exception e) {
