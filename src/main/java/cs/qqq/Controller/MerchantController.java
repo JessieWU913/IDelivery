@@ -344,6 +344,14 @@ public class MerchantController {
             orders = orderService.getMerchantOrders(merchant.getMerchantId());
         }
 
+        // 为每个订单加载订单明细
+        for (Order order : orders) {
+            Order orderDetail = orderService.getOrderDetail(order.getOrderId());
+            if (orderDetail != null) {
+                order.setOrderItems(orderDetail.getOrderItems());
+            }
+        }
+
         model.addAttribute("merchant", merchant);
         model.addAttribute("orders", orders);
         model.addAttribute("status", status);

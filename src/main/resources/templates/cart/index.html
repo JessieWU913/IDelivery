@@ -47,6 +47,22 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .order-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .order-btn:hover {
+            background: #218838;
         }
 
         .cart-item {
@@ -232,6 +248,7 @@
     <div class="page-header">
         <h1 class="page-title">🛒 我的购物车</h1>
         <div>
+            <a href="/order/list" class="order-btn">📦 我的订单</a>
             <button class="back-btn" onclick="location.href='/menu/index'">继续选购</button>
             <button class="clear-cart-btn" onclick="clearCart()" th:if="${cartList != null && cartList.size() > 0}">清空购物车</button>
         </div>
