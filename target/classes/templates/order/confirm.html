@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>订单确认 - 外卖系统</title>
+    <link rel="stylesheet" href="/assets/css/amazeui.min.css">
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/amazeui.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .confirm-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .address-item {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .address-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .address-item.selected {
+            border-color: #667eea;
+            background: #e8f0ff;
+        }
+
+        .address-item .default-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .cart-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-row.total {
+            border-bottom: none;
+            border-top: 2px solid #667eea;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-back {
+            background: #ccc;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #aaa;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+<div class="confirm-container">
+    <div class="page-header">
+        <h1 class="page-title">订单确认</h1>
+        <button class="btn btn-back" onclick="history.back()">返回购物车</button>
+    </div>
+
+    <!-- 配送地址 -->
+    <div class="section">
+        <div class="section-title">选择配送地址</div>
+        <div id="addressList">
+            <div th:if="${addresses != null && addresses.size() > 0}">
+                <div th:each="addr : ${addresses}"
+                     class="address-item"
+                     th:onclick="'selectAddress(' + ${addr.addressId} + ')'"
+                     th:attr="data-address-id=${addr.addressId}">
+                    <div>
+                        <strong th:text="${addr.contactName}">联系人</strong>
+                        <span th:text="${addr.contactPhone}">联系电话</span>
+                        <span th:if="${addr.isDefault == '1'}" class="default-badge">默认</span>
+                    </div>
+                    <div style="margin-top: 5px; color: #666;" th:text="${addr.fullAddress != null ? addr.fullAddress : addr.detailAddress}">地址</div>
+                </div>
+            </div>
+            <div class="address-item" onclick="showNewAddressForm()">
+                <div>
+                    <strong>+ 新增地址</strong>
+                    <span style="color: #999; margin-left: 10px;">点击添加新地址</span>
+                </div>
+            </div>
+        </div>
+        <div id="newAddressForm" style="display: none; margin-top: 20px;">
+            <div class="form-group">
+                <label>联系人姓名 *</label>
+                <input type="text" id="contactName" placeholder="请输入联系人姓名" required>
+            </div>
+            <div class="form-group">
+                <label>联系电话 *</label>
+                <input type="tel" id="contactPhone" placeholder="请输入联系电话" required>
+            </div>
+            <div class="form-group">
+                <label>省份</label>
+                <input type="text" id="province" placeholder="请输入省份">
+            </div>
+            <div class="form-group">
+                <label>城市</label>
+                <input type="text" id="city" placeholder="请输入城市">
+            </div>
+            <div class="form-group">
+                <label>区县</label>
+                <input type="text" id="district" placeholder="请输入区县">
+            </div>
+            <div class="form-group">
+                <label>详细地址 *</label>
+                <input type="text" id="detailAddress" placeholder="请输入详细地址" required>
+            </div>
+            <button class="btn btn-submit" onclick="saveNewAddress()">保存地址</button>
+        </div>
+    </div>
+
+    <!-- 订单信息 -->
+    <div class="section">
+        <div class="section-title">订单信息</div>
+        <div class="form-group">
+            <label>订单备注</label>
+            <textarea id="remark" placeholder="选填：如有特殊要求，请在此填写"></textarea>
+        </div>
+    </div>
+
+    <!-- 订单汇总 -->
+    <div class="cart-summary">
+        <div class="section-title">订单汇总</div>
+        <div th:if="${cartList != null && cartList.size() > 0}">
+            <!-- 按商户分组显示 -->
+            <div th:each="merchantEntry : ${cartByMerchant}" style="margin-bottom: 20px;">
+                <div style="font-weight: bold; color: #667eea; margin-bottom: 10px;">
+                    🏪 <span th:text="${#strings.substringAfter(merchantEntry.key, '_')}">商户名称</span>
+                </div>
+                <div th:each="item : ${merchantEntry.value}" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                    <span th:text="${item.productName}">商品名称</span>
+                    <span>x<span th:text="${item.quantity}">1</span></span>
+                    <span>¥<span th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2)}">0.00</span></span>
+                </div>
+            </div>
+            <div class="summary-row total">
+                <span>合计：</span>
+                <span>¥<span th:text="${#numbers.formatDecimal(totalPrice, 1, 2)}">0.00</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提交按钮 -->
+    <div class="btn-group">
+        <button class="btn btn-back" onclick="history.back()">返回修改</button>
+        <button class="btn btn-submit" id="submitBtn" onclick="submitOrder()" disabled>提交订单</button>
+    </div>
+</div>
+
+<script>
+    let selectedAddress = null;
+
+    // 页面加载时初始化
+    $(document).ready(function() {
+        // 自动选中默认地址
+        const defaultAddress = $('.address-item .default-badge').closest('.address-item');
+        if (defaultAddress.length > 0) {
+            const addressId = defaultAddress.attr('data-address-id');
+            if (addressId) {
+                selectAddress(parseInt(addressId));
+            }
+        }
+        updateSubmitButton();
+    });
+
+    // 显示新增地址表单
+    function showNewAddressForm() {
+        $('#newAddressForm').show();
+        $('.address-item').removeClass('selected');
+        selectedAddress = null;
+        updateSubmitButton();
+    }
+
+    // 选择地址
+    function selectAddress(addressId) {
+        // 隐藏新增地址表单
+        $('#newAddressForm').hide();
+
+        // 更新选中状态
+        $('.address-item').removeClass('selected');
+        const addressElement = $('.address-item[data-address-id="' + addressId + '"]');
+        addressElement.addClass('selected');
+
+        // 从页面中获取地址信息
+        if (addressElement.length > 0) {
+            const nameText = addressElement.find('strong').text().trim();
+            const phoneText = addressElement.find('strong').next('span').text().trim();
+            const addressText = addressElement.find('div').last().text().trim();
+
+            selectedAddress = {
+                addressId: addressId,
+                contactName: nameText,
+                contactPhone: phoneText,
+                fullAddress: addressText
+            };
+            updateSubmitButton();
+        }
+    }
+
+    // 保存新地址
+    function saveNewAddress() {
+        const address = {
+            contactName: $('#contactName').val(),
+            contactPhone: $('#contactPhone').val(),
+            province: $('#province').val(),
+            city: $('#city').val(),
+            district: $('#district').val(),
+            detailAddress: $('#detailAddress').val(),
+            isDefault: '0'
+        };
+
+        if (!address.contactName || !address.contactPhone || !address.detailAddress) {
+            alert('请填写必填项');
+            return;
+        }
+
+        const token = $("meta[name='_csrf']").attr("content");
+        const header = $("meta[name='_csrf_header']").attr("content");
+
+        $.ajax({
+            url: '/address/add',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(address),
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader(header, token); // 添加 CSRF Token
+            },
+            success: function(res) {
+                if (res.success) {
+                    alert('地址添加成功');
+                    // 刷新地址列表
+                    loadAddressList();
+                } else {
+                    alert(res.message || '添加失败');
+                }
+            },
+            error: function(xhr) {
+                console.error('错误详情:', xhr.responseText); // 添加调试日志
+                alert('网络错误，请重试');
+            }
+        });
+    }
+
+    // 加载地址列表
+    function loadAddressList() {
+        $.ajax({
+            url: '/address/listByUser',
+            type: 'GET',
+            success: function(res) {
+                if (res.success) {
+                    const addressList = res.addresses;
+                    const addressListContainer = $('#addressList');
+                    addressListContainer.empty();
+
+                    // 渲染地址列表
+                    addressList.forEach(addr => {
+                        const isDefault = addr.isDefault === '1';
+                        const addressItem = `
+                                <div class="address-item ${isDefault ? 'selected' : ''}"
+                                     data-address-id="${addr.addressId}"
+                                     onclick="selectAddress(${addr.addressId})">
+                                    <div>
+                                        <strong>${addr.contactName}</strong>
+                                        <span>${addr.contactPhone}</span>
+                                        ${isDefault ? '<span class="default-badge">默认</span>' : ''}
+                                    </div>
+                                    <div style="margin-top: 5px; color: #666;">${addr.fullAddress || addr.detailAddress}</div>
+                                </div>
+                            `;
+                        addressListContainer.append(addressItem);
+                    });
+
+                    // 添加新增地址按钮
+                    addressListContainer.append(`
+                            <div class="address-item" onclick="showNewAddressForm()">
+                                <div>
+                                    <strong>+ 新增地址</strong>
+                                    <span style="color: #999; margin-left: 10px;">点击添加新地址</span>
+                                </div>
+                            </div>
+                        `);
+
+                    // 自动选中默认地址
+                    const defaultAddress = $('.address-item .default-badge').closest('.address-item');
+                    if (defaultAddress.length > 0) {
+                        const addressId = defaultAddress.attr('data-address-id');
+                        if (addressId) {
+                            selectAddress(parseInt(addressId));
+                        }
+                    }
+                } else {
+                    alert(res.message || '加载地址失败');
+                }
+            },
+            error: function() {
+                alert('网络错误，请重试');
+            }
+        });
+    }
+
+    // 更新提交按钮状态
+    function updateSubmitButton() {
+        if (selectedAddress) {
+            $('#submitBtn').prop('disabled', false);
+        } else {
+            $('#submitBtn').prop('disabled', true);
+        }
+    }
+
+    // 提交订单
+    function submitOrder() {
+        if (!selectedAddress) {
+            alert('请选择配送地址');
+            return;
+        }
+
+        const deliveryAddress = selectedAddress.fullAddress;
+        const contactName = selectedAddress.contactName;
+        const contactPhone = selectedAddress.contactPhone;
+        const remark = $('#remark').val() || '';
+
+        if (!deliveryAddress || !contactName || !contactPhone) {
+            alert('地址信息不完整，请重新选择');
+            return;
+        }
+
+        if (!confirm('确认提交订单吗？')) {
+            return;
+        }
+
+        $('#submitBtn').prop('disabled', true).text('提交中...');
+
+        const token = $("meta[name='_csrf']").attr("content");
+        const header = $("meta[name='_csrf_header']").attr("content");
+
+        $.ajax({
+            url: '/order/create',
+            type: 'POST',
+            contentType: 'application/x-www-form-urlencoded', // 确保与后端接收格式一致
+            data: {
+                deliveryAddress: deliveryAddress,
+                contactName: contactName,
+                contactPhone: contactPhone,
+                remark: remark
+            },
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader(header, token); // 添加 CSRF Token
+            },
+            success: function(res) {
+                if (res.success) {
+                    alert('订单创建成功！共创建 ' + (res.orderCount || 1) + ' 个订单');
+                    window.location.href = '/order/list';
+                } else if (res.needLogin) {
+                    alert(res.message || '请先登录');
+                    window.location.href = '/login.html'; // 跳转登录页
+                } else {
+                    alert(res.message || '订单创建失败');
+                    $('#submitBtn').prop('disabled', false).text('提交订单');
+                }
+            },
+            error: function(xhr) {
+                console.error('错误详情:', xhr.responseText); // 添加调试日志
+                alert('网络错误，请重试');
+                $('#submitBtn').prop('disabled', false).text('提交订单');
+            }
+        });
+    }
+</script>
+</body>
+</html>
+

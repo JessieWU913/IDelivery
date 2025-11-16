@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>我的订单 - 外卖系统</title>
+    <link rel="stylesheet" href="/assets/css/amazeui.min.css">
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/amazeui.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .order-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 20px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-tab:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .order-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .order-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-no {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .order-time {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-paid { background: #d1ecf1; color: #0c5460; }
+        .status-preparing { background: #d4edda; color: #155724; }
+        .status-delivering { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+
+        .merchant-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .order-items {
+            margin: 15px 0;
+        }
+
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: #666;
+        }
+
+        .order-item-row .item-name {
+            flex: 1;
+        }
+
+        .order-item-row .item-quantity {
+            margin: 0 20px;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .order-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-orders-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="order-container">
+    <div class="page-header">
+        <h1 class="page-title">📦 我的订单</h1>
+        <button class="btn btn-secondary" onclick="location.href='/menu/index'">继续购物</button>
+    </div>
+
+    <!-- 订单状态筛选 -->
+    <div class="filter-tabs">
+        <div class="filter-tab" th:classappend="${status == null || status == ''} ? 'active'"
+             onclick="location.href='/order/list'">全部</div>
+        <div class="filter-tab" th:classappend="${status == 'pending'} ? 'active'"
+             onclick="location.href='/order/list?status=pending'">待支付</div>
+        <div class="filter-tab" th:classappend="${status == 'paid'} ? 'active'"
+             onclick="location.href='/order/list?status=paid'">待接单</div>
+        <div class="filter-tab" th:classappend="${status == 'preparing'} ? 'active'"
+             onclick="location.href='/order/list?status=preparing'">制作中</div>
+        <div class="filter-tab" th:classappend="${status == 'delivering'} ? 'active'"
+             onclick="location.href='/order/list?status=delivering'">配送中</div>
+        <div class="filter-tab" th:classappend="${status == 'completed'} ? 'active'"
+             onclick="location.href='/order/list?status=completed'">已完成</div>
+        <div class="filter-tab" th:classappend="${status == 'cancelled'} ? 'active'"
+             onclick="location.href='/order/list?status=cancelled'">已取消</div>
+    </div>
+
+    <!-- 订单列表 -->
+    <div th:if="${orders == null || orders.size() == 0}" class="empty-orders">
+        <div class="empty-orders-icon">📦</div>
+        <h3>暂无订单</h3>
+        <p>快去选购您喜欢的商品吧~</p>
+        <button class="btn btn-primary" style="margin-top: 20px;" onclick="location.href='/menu/index'">去购物</button>
+    </div>
+
+    <div th:if="${orders != null && orders.size() > 0}">
+        <div th:each="order : ${orders}" class="order-item">
+            <div class="order-header">
+                <div class="order-info">
+                    <div class="order-no">订单号：<span th:text="${order.orderNo}">ORDER123456</span></div>
+                    <div class="order-time" th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm:ss')}">2025-11-10 12:00:00</div>
+                </div>
+                <div>
+                    <span class="order-status" th:classappend="'status-' + ${order.orderStatus}">
+                        <span th:switch="${order.orderStatus}">
+                            <span th:case="'pending'">待支付</span>
+                            <span th:case="'paid'">待接单</span>
+                            <span th:case="'preparing'">制作中</span>
+                            <span th:case="'delivering'">配送中</span>
+                            <span th:case="'completed'">已完成</span>
+                            <span th:case="'cancelled'">已取消</span>
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="merchant-name">🏪 <span th:text="${order.merchantName}">商户名称</span></div>
+
+            <div class="order-items" th:if="${order.orderItems != null && order.orderItems.size() > 0}">
+                <div th:each="item : ${order.orderItems}" class="order-item-row">
+                    <span class="item-name" th:text="${item.productName}">商品名称</span>
+                    <span class="item-quantity">x<span th:text="${item.quantity}">1</span></span>
+                    <span>¥<span th:text="${#numbers.formatDecimal(item.subtotal, 1, 2)}">0.00</span></span>
+                </div>
+            </div>
+
+            <div class="order-footer">
+                <div class="order-total">
+                    实付：¥<span th:text="${#numbers.formatDecimal(order.actualAmount, 1, 2)}">0.00</span>
+                </div>
+                <div class="order-actions">
+                    <button class="btn btn-secondary"
+                            th:onclick="'location.href=\'/order/detail/' + ${order.orderId} + '\''">查看详情</button>
+                    <button th:if="${order.orderStatus == 'pending'}"
+                            class="btn btn-primary"
+                            th:onclick="'payOrder(' + ${order.orderId} + ')'">立即支付</button>
+                    <button th:if="${order.orderStatus == 'pending'}"
+                            class="btn btn-danger"
+                            th:onclick="'cancelOrder(' + ${order.orderId} + ')'">取消订单</button>
+                    <button th:if="${order.orderStatus == 'delivering'}"
+                            class="btn btn-primary"
+                            th:onclick="'confirmOrder(' + ${order.orderId} + ')'">确认收货</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+    $(document).ajaxSend(function(e, xhr, options) {
+        xhr.setRequestHeader(header, token);
+    });
+
+    function payOrder(orderId) {
+        if (!confirm('确认支付此订单吗？')) return;
+        $.ajax({
+            url: '/order/pay/' + orderId,
+            type: 'POST',
+            success: function(res) {
+                if (res.success) {
+                    alert('支付成功！');
+                    location.reload();
+                } else {
+                    alert(res.message || '支付失败');
+                }
+            }
+        });
+    }
+
+    function cancelOrder(orderId) {
+        const reason = prompt('请输入取消原因（选填）：');
+        if (reason === null) return;
+        if (!confirm('确认取消此订单吗？')) return;
+        $.ajax({
+            url: '/order/cancel/' + orderId,
+            type: 'POST',
+            data: { cancelReason: reason || '用户取消' },
+            success: function(res) {
+                if (res.success) {
+                    alert('订单已取消');
+                    location.reload();
+                } else {
+                    alert(res.message || '取消失败');
+                }
+            }
+        });
+    }
+
+    function confirmOrder(orderId) {
+        if (!confirm('确认已收到商品吗？')) return;
+        $.ajax({
+            url: '/order/confirm/' + orderId,
+            type: 'POST',
+            success: function(res) {
+                if (res.success) {
+                    alert('确认收货成功！');
+                    location.reload();
+                } else {
+                    alert(res.message || '操作失败');
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

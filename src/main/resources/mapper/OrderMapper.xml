@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cs.qqq.Mapper.OrderMapper">
+
+    <!-- 插入订单 -->
+    <insert id="insertOrder" parameterType="cs.qqq.Entity.Order" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO t_order (
+            order_no,
+            user_id,
+            merchant_id,
+            merchant_name,
+            total_amount,
+            delivery_fee,
+            discount_amount,
+            actual_amount,
+            payment_method,
+            payment_status,
+            order_status,
+            delivery_address,
+            contact_name,
+            contact_phone,
+            delivery_time,
+            remark,
+            create_time,
+            update_time
+        ) VALUES (
+            #{orderNo},
+            #{userId},
+            #{merchantId},
+            #{merchantName},
+            #{totalAmount},
+            #{deliveryFee},
+            #{discountAmount},
+            #{actualAmount},
+            #{paymentMethod},
+            #{paymentStatus},
+            #{orderStatus},
+            #{deliveryAddress},
+            #{contactName},
+            #{contactPhone},
+            #{deliveryTime},
+            #{remark},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 根据订单ID查询订单 -->
+    <select id="findById" parameterType="java.lang.Long" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 根据订单号查询订单 -->
+    <select id="findByOrderNo" parameterType="String" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE order_no = #{orderNo}
+    </select>
+
+    <!-- 根据用户ID查询订单列表 -->
+    <select id="findByUserId" parameterType="Long" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据用户ID和订单状态查询订单列表 -->
+    <select id="findByUserIdAndStatus" parameterType="map" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE user_id = #{userId} AND order_status = #{orderStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据商户ID查询订单列表 -->
+    <select id="findByMerchantId" parameterType="Long" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE merchant_id = #{merchantId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据商户ID和订单状态查询订单列表 -->
+    <select id="findByMerchantIdAndStatus" parameterType="map" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE merchant_id = #{merchantId} AND order_status = #{orderStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 更新订单状态 -->
+    <update id="updateOrderStatus" parameterType="map">
+        UPDATE t_order
+        SET order_status = #{orderStatus}, update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+    <!-- 更新支付状态 -->
+    <update id="updatePaymentStatus" parameterType="map">
+        UPDATE t_order
+        SET payment_status = #{paymentStatus}, pay_time = #{payTime}, order_status = 'paid', update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+    <!-- 取消订单 -->
+    <update id="cancelOrder" parameterType="map">
+        UPDATE t_order
+        SET order_status = 'cancelled', cancel_reason = #{cancelReason}, cancel_time = #{cancelTime}, update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+    <!-- 确认收货 -->
+    <update id="confirmOrder" parameterType="map">
+        UPDATE t_order
+        SET order_status = 'completed', complete_time = #{completeTime}, update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+    <!-- 更新订单信息 -->
+    <update id="updateOrder" parameterType="cs.qqq.Entity.Order">
+        UPDATE t_order
+        SET
+            order_no = #{orderNo},
+            merchant_id = #{merchantId},
+            merchant_name = #{merchantName},
+            total_amount = #{totalAmount},
+            delivery_fee = #{deliveryFee},
+            discount_amount = #{discountAmount},
+            actual_amount = #{actualAmount},
+            payment_method = #{paymentMethod},
+            payment_status = #{paymentStatus},
+            order_status = #{orderStatus},
+            delivery_address = #{deliveryAddress},
+            contact_name = #{contactName},
+            contact_phone = #{contactPhone},
+            remark = #{remark},
+            delivery_time = #{deliveryTime},
+            update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+</mapper>

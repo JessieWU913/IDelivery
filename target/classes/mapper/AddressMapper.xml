@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cs.qqq.Mapper.AddressMapper">
+
+    <!-- 根据用户ID查询地址列表，按默认地址优先排序 -->
+    <select id="findByUserId" parameterType="Long" resultType="cs.qqq.Entity.Address">
+        SELECT * FROM t_address
+        WHERE user_id = #{userId}
+        ORDER BY is_default DESC, create_time DESC
+    </select>
+
+    <!-- 根据地址ID查询地址 -->
+    <select id="findById" parameterType="Long" resultType="cs.qqq.Entity.Address">
+        SELECT * FROM t_address
+        WHERE address_id = #{addressId}
+    </select>
+
+    <!-- 查询用户的默认地址 -->
+    <select id="findDefaultByUserId" parameterType="Long" resultType="cs.qqq.Entity.Address">
+        SELECT * FROM t_address
+        WHERE user_id = #{userId} AND is_default = '1'
+        LIMIT 1
+    </select>
+
+    <!-- 添加地址 -->
+    <insert id="insert" parameterType="cs.qqq.Entity.Address" useGeneratedKeys="true" keyProperty="addressId">
+        INSERT INTO t_address (
+            user_id,
+            contact_name,
+            contact_phone,
+            province,
+            city,
+            district,
+            detail_address,
+            full_address,
+            is_default,
+            create_time,
+            update_time
+        ) VALUES (
+            #{userId},
+            #{contactName},
+            #{contactPhone},
+            #{province},
+            #{city},
+            #{district},
+            #{detailAddress},
+            #{fullAddress},
+            #{isDefault},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 更新地址 -->
+    <update id="update" parameterType="cs.qqq.Entity.Address">
+        UPDATE t_address
+        SET
+            contact_name = #{contactName},
+            contact_phone = #{contactPhone},
+            province = #{province},
+            city = #{city},
+            district = #{district},
+            detail_address = #{detailAddress},
+            full_address = #{fullAddress},
+            is_default = #{isDefault},
+            update_time = NOW()
+        WHERE address_id = #{addressId}
+    </update>
+
+    <!-- 删除地址 -->
+    <delete id="delete" parameterType="Long">
+        DELETE FROM t_address
+        WHERE address_id = #{addressId}
+    </delete>
+
+    <!-- 取消用户的默认地址 -->
+    <update id="cancelDefaultByUserId" parameterType="Long">
+        UPDATE t_address
+        SET is_default = '0', update_time = NOW()
+        WHERE user_id = #{userId} AND is_default = '1'
+    </update>
+
+    <!-- 设置默认地址 -->
+    <update id="setDefault" parameterType="Long">
+        UPDATE t_address
+        SET is_default = '1', update_time = NOW()
+        WHERE address_id = #{addressId}
+    </update>
+
+</mapper>

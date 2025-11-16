@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cs.qqq.Mapper.OrderItemMapper">
+
+    <!-- 批量插入订单明细 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO t_order_item (
+            order_id,
+            order_no,
+            product_id,
+            product_name,
+            product_img,
+            price,
+            quantity,
+            subtotal,
+            create_time
+        ) VALUES
+        <foreach collection="items" item="item" separator=",">
+            (
+                #{item.orderId},
+                #{item.orderNo},
+                #{item.productId},
+                #{item.productName},
+                #{item.productImg},
+                #{item.price},
+                #{item.quantity},
+                #{item.subtotal},
+                NOW()
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据订单ID查询订单明细 -->
+    <select id="findByOrderId" parameterType="Long" resultType="cs.qqq.Entity.OrderItem">
+        SELECT * FROM t_order_item
+        WHERE order_id = #{orderId}
+        ORDER BY item_id ASC
+    </select>
+
+    <!-- 根据订单号查询订单明细 -->
+    <select id="findByOrderNo" parameterType="String" resultType="cs.qqq.Entity.OrderItem">
+        SELECT * FROM t_order_item
+        WHERE order_no = #{orderNo}
+        ORDER BY item_id ASC
+    </select>
+
+    <!-- 根据商品ID查询订单明细（用于统计销量） -->
+    <select id="findByProductId" parameterType="Long" resultType="cs.qqq.Entity.OrderItem">
+        SELECT * FROM t_order_item
+        WHERE product_id = #{productId}
+        ORDER BY item_id DESC
+    </select>
+
+</mapper>

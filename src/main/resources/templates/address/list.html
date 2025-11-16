@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>我的地址 - 外卖系统</title>
+    <link rel="stylesheet" href="/assets/css/amazeui.min.css">
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/amazeui.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .address-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .address-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .address-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .address-item.default {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .address-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .default-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .address-info {
+            color: #666;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .address-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .add-address-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .add-address-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .empty-addresses {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-addresses-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="address-container">
+    <div class="page-header">
+        <h1 class="page-title">📍 我的地址</h1>
+        <button class="btn btn-secondary" onclick="location.href='/order/list'">返回订单</button>
+    </div>
+
+    <button class="add-address-btn" onclick="location.href='/address/add'">+ 添加新地址</button>
+
+    <div th:if="${addresses == null || addresses.size() == 0}" class="empty-addresses">
+        <div class="empty-addresses-icon">📍</div>
+        <h3>暂无地址</h3>
+        <p>添加地址后，下单更方便哦~</p>
+        <button class="btn btn-primary" style="margin-top: 20px;" onclick="location.href='/address/add'">添加地址</button>
+    </div>
+
+    <div th:if="${addresses != null && addresses.size() > 0}">
+        <div th:each="address : ${addresses}"
+             class="address-item"
+             th:classappend="${address.isDefault == '1'} ? 'default'">
+            <div class="address-header">
+                <div>
+                    <span class="address-name" th:text="${address.contactName}">联系人</span>
+                    <span th:text="${address.contactPhone}">联系电话</span>
+                    <span th:if="${address.isDefault == '1'}" class="default-badge">默认</span>
+                </div>
+            </div>
+            <div class="address-info" th:text="${address.fullAddress != null ? address.fullAddress : address.detailAddress}">地址信息</div>
+            <div class="address-actions">
+                <button th:if="${address.isDefault != '1'}"
+                        class="btn btn-primary"
+                        th:onclick="'setDefault(' + ${address.addressId} + ')'">设为默认</button>
+                <button class="btn btn-secondary"
+                        th:onclick="'location.href=\'/address/edit/' + ${address.addressId} + '\''">编辑</button>
+                <button class="btn btn-danger"
+                        th:onclick="'deleteAddress(' + ${address.addressId} + ')'">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+    $(document).ajaxSend(function(e, xhr, options) {
+        xhr.setRequestHeader(header, token);
+    });
+
+    function setDefault(addressId) {
+        $.ajax({
+            url: '/address/setDefault/' + addressId,
+            type: 'POST',
+            success: function(res) {
+                if (res.success) {
+                    alert('设置成功');
+                    location.reload();
+                } else {
+                    alert(res.message || '设置失败');
+                }
+            }
+        });
+    }
+
+    function deleteAddress(addressId) {
+        if (!confirm('确认删除此地址吗？')) {
+            return;
+        }
+
+        $.ajax({
+            url: '/address/delete/' + addressId,
+            type: 'POST',
+            success: function(res) {
+                if (res.success) {
+                    alert('删除成功');
+                    location.reload();
+                } else {
+                    alert(res.message || '删除失败');
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
+
