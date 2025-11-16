@@ -64,12 +64,32 @@
             max-width: 600px;
             margin: 15px auto 0;
             padding: 0 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
         
         .search-box input {
+            flex: 1;
             border-radius: 25px;
             padding: 10px 20px;
             border: none;
+        }
+        
+        .search-btn {
+            background: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            cursor: pointer;
+            color: #667eea;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .search-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
         }
         
         .category-nav {
@@ -238,17 +258,20 @@
         </div>
         <div class="search-box">
             <input type="text" id="searchInput" class="am-form-field" placeholder="搜索你想吃的美食..." />
+            <button class="search-btn" onclick="performSearch()">🔍 搜索</button>
         </div>
     </div>
 </div>
 
 <!-- 分类导航 -->
 <div class="category-nav am-container">
-    <div class="category-item active" data-category="all">全部</div>
-    <div th:each="category : ${categories}" 
-         class="category-item" 
-         th:data-category="${category.categoryId}"
-         th:text="${category.categoryName}">
+    <div style="text-align: center; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <div class="category-item active" data-category="all">全部</div>
+        <div th:each="category : ${categories}" 
+             class="category-item" 
+             th:data-category="${category.categoryId}"
+             th:text="${category.categoryName}">
+        </div>
     </div>
 </div>
 
@@ -396,19 +419,22 @@ $(document).ready(function() {
         sortProducts();
     });
     
-    // 搜索功能
-    var searchTimer;
-    $('#searchInput').on('input', function() {
-        clearTimeout(searchTimer);
-        var keyword = $(this).val().trim();
-        
-        searchTimer = setTimeout(function() {
-            if (keyword === '') {
-                filterAndSort();
-            } else {
-                searchProducts(keyword);
-            }
-        }, 300);
+    // 搜索功能 - 点击按钮搜索
+    function performSearch() {
+        var keyword = $('#searchInput').val().trim();
+        if (keyword === '') {
+            filterAndSort();
+        } else {
+            searchProducts(keyword);
+        }
+    }
+    
+    // 支持回车键搜索
+    $('#searchInput').on('keypress', function(e) {
+        if (e.which === 13) { // Enter键
+            e.preventDefault();
+            performSearch();
+        }
     });
     
     // 综合筛选和排序

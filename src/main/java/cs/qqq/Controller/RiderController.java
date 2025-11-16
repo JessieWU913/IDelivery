@@ -174,14 +174,14 @@ public class RiderController {
                 return result;
             }
 
-            // 完成送达
-            boolean success = orderService.confirmOrder(orderId);
+            // 完成送达：将订单状态改为delivered（等待用户确认收货）
+            boolean success = orderService.riderDeliverOrder(orderId);
             if (success) {
                 // 从接单列表中移除
                 acceptedOrders.remove(orderId);
             }
             result.put("success", success);
-            result.put("message", success ? "送达成功" : "送达失败");
+            result.put("message", success ? "送达成功，等待用户确认收货" : "送达失败");
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());

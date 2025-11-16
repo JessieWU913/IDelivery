@@ -61,7 +61,12 @@ public interface OrderService {
     boolean cancelOrder(Long orderId, String cancelReason);
 
     /**
-     * 确认收货
+     * 骑手送达（更新订单状态为delivered，等待用户确认收货）
+     */
+    boolean riderDeliverOrder(Long orderId);
+
+    /**
+     * 确认收货（用户确认收货，将订单状态改为completed）
      */
     boolean confirmOrder(Long orderId);
 

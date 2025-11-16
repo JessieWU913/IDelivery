@@ -249,6 +249,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public boolean riderDeliverOrder(Long orderId) {
+        Order order = orderMapper.findById(orderId);
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
+        }
+
+        if (!"delivering".equals(order.getOrderStatus())) {
+            throw new RuntimeException("订单状态不正确，无法完成送达");
+        }
+
+        // 更新订单状态为delivered（骑手已送达，等待用户确认收货）
+        orderMapper.updateOrderStatus(orderId, "delivered");
+        return true;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean confirmOrder(Long orderId) {
         Order order = orderMapper.findById(orderId);
@@ -256,8 +272,8 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("订单不存在");
         }
 
-        if (!"delivering".equals(order.getOrderStatus())) {
-            throw new RuntimeException("订单状态不正确，无法确认收货");
+        if (!"delivered".equals(order.getOrderStatus())) {
+            throw new RuntimeException("订单状态不正确，无法确认收货。请等待骑手送达后再确认收货。");
         }
 
         // 更新订单状态为已完成

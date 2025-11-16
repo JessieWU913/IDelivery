@@ -218,6 +218,11 @@
                 <div class="order-status">配送中</div>
             </div>
 
+            <div th:if="${acceptedOrderIds != null && acceptedOrderIds.contains(order.orderId)}" 
+                 style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center; font-weight: bold;">
+                ✓ 您已接单此订单
+            </div>
+
             <div class="merchant-name">🏪 商户：<span th:text="${order.merchantName}">商户名称</span></div>
 
             <!-- 配送信息 -->

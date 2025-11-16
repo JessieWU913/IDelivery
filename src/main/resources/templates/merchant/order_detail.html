@@ -81,6 +81,7 @@
         .status-paid { background: #d1ecf1; color: #0c5460; }
         .status-preparing { background: #d4edda; color: #155724; }
         .status-delivering { background: #cce5ff; color: #004085; }
+        .status-delivered { background: #fff3cd; color: #856404; }
         .status-completed { background: #d1ecf1; color: #0c5460; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
 
@@ -167,6 +168,7 @@
                             <span th:case="'paid'">待接单</span>
                             <span th:case="'preparing'">制作中</span>
                             <span th:case="'delivering'">配送中</span>
+                            <span th:case="'delivered'">待确认收货</span>
                             <span th:case="'completed'">已完成</span>
                             <span th:case="'cancelled'">已取消</span>
                         </span>
