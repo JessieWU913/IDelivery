@@ -25,7 +25,7 @@ public class RiderController {
     private OrderService orderService;
 
     /**
-     * 骑手管理首页
+     * 骑手管理
      */
     @GetMapping("/index")
     public String index(HttpSession session, Model model) {
@@ -93,7 +93,6 @@ public class RiderController {
                 return result;
             }
 
-            // 接单：订单状态保持为delivering，但可以记录骑手信息
             // 这里可以根据需要添加骑手ID字段到订单表
             result.put("success", true);
             result.put("message", "接单成功");
@@ -141,7 +140,7 @@ public class RiderController {
                 return result;
             }
 
-            // 完成送达：将订单状态改为已完成
+            // 完成送达
             boolean success = orderService.confirmOrder(orderId);
             result.put("success", success);
             result.put("message", success ? "送达成功" : "送达失败");
