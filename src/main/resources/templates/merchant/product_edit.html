@@ -96,6 +96,17 @@
                                     </div>
                                     
                                     <div class="form-group">
+                                        <label class="col-sm-2 control-label">是否推荐</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" id="isRecommend">
+                                                <option value="0" th:selected="${product.isRecommend == '0' || product.isRecommend == null}">否</option>
+                                                <option value="1" th:selected="${product.isRecommend == '1'}">是</option>
+                                            </select>
+                                            <small class="text-muted">推荐菜品会在首页优先显示</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
                                         <label class="col-sm-2 control-label">状态</label>
                                         <div class="col-sm-10">
                                             <select class="form-control" id="status">
@@ -105,10 +116,22 @@
                                         </div>
                                     </div>
                                     
+                                    <div class="form-group" id="imagePreviewGroup" th:if="${product.productImg != null && product.productImg != ''}">
+                                        <label class="col-sm-2 control-label">图片预览</label>
+                                        <div class="col-sm-10">
+                                            <img id="imagePreview" th:src="${product.productImg}" alt="图片预览" 
+                                                 style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; border-radius: 5px; padding: 5px;">
+                                        </div>
+                                    </div>
+                                    
                                     <div class="form-group">
                                         <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="submit" class="btn btn-primary">保存</button>
-                                            <a th:href="@{/merchant/products}" class="btn btn-default">返回</a>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-save"></i> 保存
+                                            </button>
+                                            <a th:href="@{/merchant/products}" class="btn btn-default">
+                                                <i class="fa fa-arrow-left"></i> 返回
+                                            </a>
                                         </div>
                                     </div>
                                 </form>
@@ -129,21 +152,55 @@
         $(document).ajaxSend(function(e, xhr, options) {
             xhr.setRequestHeader(header, token);
         });
+        
+        // 图片预览功能
+        $('#productImg').on('input', function() {
+            var imgUrl = $(this).val().trim();
+            if (imgUrl) {
+                $('#imagePreview').attr('src', imgUrl);
+                $('#imagePreviewGroup').show();
+                // 如果图片加载失败，隐藏预览
+                $('#imagePreview').on('error', function() {
+                    $(this).attr('src', '');
+                    $('#imagePreviewGroup').hide();
+                });
+            } else {
+                $('#imagePreviewGroup').hide();
+            }
+        });
 
         $('#productForm').submit(function(e) {
             e.preventDefault();
             
+            // 表单验证
+            if (!$('#productName').val().trim()) {
+                alert('请输入菜品名称');
+                return;
+            }
+            if (!$('#categoryId').val()) {
+                alert('请选择菜品分类');
+                return;
+            }
+            if (!$('#price').val() || parseFloat($('#price').val()) <= 0) {
+                alert('请输入有效的价格');
+                return;
+            }
+            if (!$('#stock').val() || parseInt($('#stock').val()) < 0) {
+                alert('请输入有效的库存数量');
+                return;
+            }
+            
             var product = {
                 productId: $('#productId').val(),
-                productName: $('#productName').val(),
+                productName: $('#productName').val().trim(),
                 categoryId: $('#categoryId').val(),
-                productDesc: $('#productDesc').val(),
+                productDesc: $('#productDesc').val().trim(),
                 price: $('#price').val(),
                 originalPrice: $('#originalPrice').val(),
                 stock: $('#stock').val(),
-                productImg: $('#productImg').val(),
+                productImg: $('#productImg').val().trim(),
                 status: $('#status').val(),
-                isRecommend: '0'  // 默认不推荐
+                isRecommend: $('#isRecommend').val()
             };
             
             // 调试：打印产品数据

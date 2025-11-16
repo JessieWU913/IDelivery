@@ -47,6 +47,7 @@
                                             <th>价格</th>
                                             <th>库存</th>
                                             <th>销量</th>
+                                            <th>推荐</th>
                                             <th>状态</th>
                                             <th>操作</th>
                                         </tr>
@@ -66,6 +67,11 @@
                                             <td th:text="${product.sales}">0</td>
                                             <td>
                                                 <span class="label" 
+                                                      th:classappend="${product.isRecommend == '1'} ? 'label-success' : 'label-default'"
+                                                      th:text="${product.isRecommend == '1'} ? '是' : '否'">否</span>
+                                            </td>
+                                            <td>
+                                                <span class="label" 
                                                       th:classappend="${product.status == '1'} ? 'label-primary' : 'label-default'"
                                                       th:text="${product.status == '1'} ? '上架' : '下架'">上架</span>
                                             </td>
@@ -81,7 +87,7 @@
                                             </td>
                                         </tr>
                                         <tr th:if="${#lists.isEmpty(products)}">
-                                            <td colspan="9" style="text-align: center; color: #999; padding: 30px;">
+                                            <td colspan="10" style="text-align: center; color: #999; padding: 30px;">
                                                 暂无菜品，<a th:href="@{/merchant/product/add}">点击添加</a>
                                             </td>
                                         </tr>
