@@ -135,9 +135,12 @@
                                 <a th:href="@{/merchant/orders}" class="btn btn-info">
                                     <i class="fa fa-shopping-cart"></i> 订单管理
                                 </a>
-                                <a href="/logout" class="btn btn-danger pull-right">
-                                    <i class="fa fa-sign-out"></i> 退出登录
-                                </a>
+                                <form action="/logout" method="post" style="display: inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-danger pull-right">
+                                        <i class="fa fa-sign-out"></i> 退出登录
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

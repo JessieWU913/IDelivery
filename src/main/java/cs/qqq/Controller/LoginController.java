@@ -5,13 +5,10 @@ import cs.qqq.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Map;
 
 
 @Controller
@@ -48,6 +45,8 @@ public class LoginController {
                 return "redirect:/userList";  // 管理员进入后台
             } else if (user.getRoleId() != null && user.getRoleId() == 3) {
                 return "redirect:/merchant/index";  // 商户进入商户管理页面
+            } else if (user.getRoleId() != null && user.getRoleId() == 4) {
+                return "redirect:/rider/index";  // 骑手进入骑手管理页面
             } else {
                 return "redirect:/menu/index";  // 普通用户进入点餐页面
             }
@@ -60,9 +59,15 @@ public class LoginController {
     }
 
     @PostMapping("/logout")
-    public String logout( HttpSession httpSession){
+    public String logout(HttpSession httpSession){
         httpSession.invalidate();
-        return "login";
+        return "redirect:/login.html";
+    }
+    
+    @GetMapping("/logout")
+    public String logoutGet(HttpSession httpSession){
+        httpSession.invalidate();
+        return "redirect:/login.html";
     }
 
 

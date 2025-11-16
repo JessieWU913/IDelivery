@@ -88,6 +88,13 @@
         ORDER BY create_time DESC
     </select>
 
+    <!-- 根据订单状态查询所有订单（用于骑手查看） -->
+    <select id="findByStatus" parameterType="String" resultType="cs.qqq.Entity.Order">
+        SELECT * FROM t_order
+        WHERE order_status = #{orderStatus}
+        ORDER BY create_time DESC
+    </select>
+
     <!-- 更新订单状态 -->
     <update id="updateOrderStatus" parameterType="map">
         UPDATE t_order

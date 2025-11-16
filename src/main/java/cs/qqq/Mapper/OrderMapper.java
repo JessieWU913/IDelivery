@@ -48,6 +48,11 @@ public interface OrderMapper {
     List<Order> findByMerchantIdAndStatus(@Param("merchantId") Long merchantId, @Param("orderStatus") String orderStatus);
 
     /**
+     * 根据订单状态查询所有订单（用于骑手查看）
+     */
+    List<Order> findByStatus(@Param("orderStatus") String orderStatus);
+
+    /**
      * 更新订单状态
      */
     int updateOrderStatus(@Param("orderId") Long orderId, @Param("orderStatus") String orderStatus);

@@ -76,6 +76,11 @@ public interface OrderService {
     boolean startDelivery(Long orderId, Long merchantId);
 
     /**
+     * 根据订单状态查询所有订单（用于骑手查看）
+     */
+    List<Order> getOrdersByStatus(String orderStatus);
+
+    /**
      * 生成订单号
      */
     String generateOrderNo();

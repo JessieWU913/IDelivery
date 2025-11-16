@@ -318,6 +318,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<Order> getOrdersByStatus(String orderStatus) {
+        return orderMapper.findByStatus(orderStatus);
+    }
+
+    @Override
     public String generateOrderNo() {
         // 格式：ORDER + 时间戳 + 4位随机数
         long timestamp = System.currentTimeMillis();
