@@ -86,4 +86,9 @@ public interface OrderMapper {
      * 获取所有订单及详细信息
      */
     List<java.util.Map<String, Object>> getAllOrdersWithDetails();
+    
+    /**
+     * 获取最近的订单列表
+     */
+    List<java.util.Map<String, Object>> getRecentOrders(@Param("limit") int limit);
 }

@@ -253,7 +253,7 @@
     </div>
 
     <div th:if="${orders != null && orders.size() > 0}">
-        <div th:each="order : ${orders}" class="order-item">
+        <div th:each="order : ${orders}" class="order-item order-card" th:attr="data-order-id=${order.orderId}">
             <div class="order-header">
                 <div class="order-info">
                     <div class="order-no">订单号：<span th:text="${order.orderNo}">ORDER123456</span></div>
@@ -363,6 +363,57 @@
             }
         });
     }
+    
+    // 自动刷新订单状态（轮询）
+    let pollInterval;
+    function startPolling() {
+        // 收集页面上所有订单ID
+        const orderIds = [];
+        document.querySelectorAll('.order-card').forEach(card => {
+            const orderId = card.getAttribute('data-order-id');
+            if (orderId) orderIds.push(orderId);
+        });
+        
+        if (orderIds.length === 0) return;
+        
+        pollInterval = setInterval(() => {
+            $.ajax({
+                url: '/order/checkUpdates',
+                type: 'GET',
+                data: { orderIds: orderIds.join(',') },
+                success: function(res) {
+                    if (res.needLogin) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+                    if (res.success && res.updates) {
+                        let hasChange = false;
+                        res.updates.forEach(update => {
+                            const statusSpan = document.querySelector(`[data-order-id="${update.orderId}"] .order-status`);
+                            if (statusSpan && statusSpan.innerText !== update.statusText) {
+                                hasChange = true;
+                            }
+                        });
+                        // 如果有状态变化，刷新页面
+                        if (hasChange) {
+                            location.reload();
+                        }
+                    }
+                }
+            });
+        }, 5000); // 每5秒轮询一次
+    }
+    
+    // 页面加载时启动轮询
+    $(document).ready(function() {
+        startPolling();
+    });
+    
+    // 页面关闭时停止轮询
+    window.addEventListener('beforeunload', function() {
+        if (pollInterval) clearInterval(pollInterval);
+    });
 </script>
 </body>
 </html>
+

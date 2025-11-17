@@ -137,9 +137,12 @@ java -jar target/qqq_qimo-1.0-SNAPSHOT.jar
 
 ### 管理员功能
 1. **登录后跳转到后台管理页面**
-2. **用户管理**：查看、添加、编辑、删除用户、商家、骑手和菜品等
-3. **角色管理**：管理用户角色权限
-4. **菜品管理**：下架商家的菜品
+2. **控制台概览**：查看统计数据和最近5条订单
+3. **用户管理**：查看、添加、编辑、删除用户（支持手机号搜索）
+4. **角色管理**：管理用户角色权限
+5. **商户管理**：创建商户（同时创建用户账号和商户信息）、查看商户列表
+6. **菜品管理**：下架商家的菜品
+7. **订单管理**：查看所有订单状态
 
 ### 商家功能
 1. **登录后自动跳转到商店管理页面**
@@ -180,24 +183,40 @@ java -jar target/qqq_qimo-1.0-SNAPSHOT.jar
 3. 确认数据库 `test` 已创建（名字必须为test）
 
 ### ❌ 问题 3：登录后出现 500 错误
-**错误信息**：`Unknown column 'user_name' in 'where clause'`
+**错误信息**：`Unknown column 'user_name' in 'where clause'` 或 `Unknown column 'u.phonenumber'`
 
 **解决方案**：
 1. 确保 `database_init_all.sql` 完整执行（只需要执行这一个）
-2. 检查 `sys_user` 表的字段名是 `username`（不是 `user_name`）
+2. 检查 `sys_user` 表的字段名是 `username` 和 `phone`（不是 `user_name` 或 `phonenumber`）
 3. 重启应用：
    ```bash
    # Ctrl+C 停止应用
    mvn clean spring-boot:run
    ```
 
-### ❌ 问题 4：菜品图片不显示
+### ❌ 问题 4：商户登录后页面报错
+**错误信息**：`Property or field 'merchantName' cannot be found on null`
+
+**解决方案**：
+1. 确保商户是通过"商户管理-添加商户"创建的，而不是通过"添加用户"创建
+2. 检查数据库 `t_merchant` 表中是否有对应的商户记录
+3. 商户的 `user_id` 字段应该关联到 `sys_user` 表的 `user_id`
+
+### ❌ 问题 4：商户登录后页面报错
+**错误信息**：`Property or field 'merchantName' cannot be found on null`
+
+**解决方案**：
+1. 确保商户是通过"商户管理-添加商户"创建的，而不是通过"添加用户"创建
+2. 检查数据库 `t_merchant` 表中是否有对应的商户记录
+3. 商户的 `user_id` 字段应该关联到 `sys_user` 表的 `user_id`
+
+### ❌ 问题 5：菜品图片不显示
 **解决方案**：
 1. 确保已将图片复制到 `src/main/resources/static/img/product/`
 2. 图片文件名要与数据库中 `product_img` 字段匹配
 3. 当前只有宫保鸡丁有图片，其他显示占位符是正常的
 
-### ❌ 问题 5：添加购物车时返回 403 错误
+### ❌ 问题 6：添加购物车时返回 403 错误
 **错误信息**：`Forbidden`
 
 **解决方案**：

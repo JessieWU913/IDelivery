@@ -37,8 +37,30 @@ public class LoginController {
         System.out.println(user);
         HttpSession httpSession=httpServletRequest.getSession();
         if (user!=null){
-            httpSession.setAttribute("currentUser",user);
-            httpSession.setAttribute("user",user);  // 兼容性，某些页面使用user
+            // 清除所有可能存在的Session，避免角色混淆
+            httpSession.removeAttribute("currentUser");
+            httpSession.removeAttribute("user");
+            httpSession.removeAttribute("adminUser");
+            httpSession.removeAttribute("merchantUser");
+            httpSession.removeAttribute("riderUser");
+            
+            // 根据角色设置不同的Session键
+            String sessionKey = "currentUser";
+            if (user.getRoleId() != null) {
+                if (user.getRoleId() == 1 || user.getRoleId() == 2) {
+                    sessionKey = "adminUser";
+                } else if (user.getRoleId() == 3) {
+                    sessionKey = "merchantUser";
+                } else if (user.getRoleId() == 4) {
+                    sessionKey = "riderUser";
+                } else {
+                    sessionKey = "normalUser";
+                }
+            }
+            
+            httpSession.setAttribute(sessionKey, user);
+            httpSession.setAttribute("currentUser", user);  // 兼容性保留
+            httpSession.setAttribute("user", user);  // 兼容性保留
             
             // 根据角色判断跳转页面
             if (user.getRoleId() != null && (user.getRoleId() == 1 || user.getRoleId() == 2)) {

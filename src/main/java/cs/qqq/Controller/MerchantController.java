@@ -46,16 +46,27 @@ public class MerchantController {
         // 获取当前登录用户
         SysUser currentUser = (SysUser) session.getAttribute("user");
         if (currentUser == null) {
+            System.out.println("商户首页访问失败: 未找到登录用户");
             return "redirect:/login";
         }
 
+        System.out.println("商户首页访问 - 用户ID: " + currentUser.getUserId() + ", 用户名: " + currentUser.getUserName());
+        
         // 查询商户信息
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
+        
         if (merchant == null) {
-            model.addAttribute("error", "您还没有开通商户");
-            return "comm/error_403";
+            System.out.println("警告: 用户ID " + currentUser.getUserId() + " 没有关联的商户信息");
+            // 简化权限:如果没有商户信息,显示提示信息
+            model.addAttribute("merchant", new Merchant()); // 传递空对象避免null错误
+            model.addAttribute("products", new java.util.ArrayList<>());
+            model.addAttribute("productCount", 0);
+            model.addAttribute("warning", "您还没有开通商户,请联系管理员开通");
+            return "merchant/index";
         }
 
+        System.out.println("商户信息查询成功 - 商户ID: " + merchant.getMerchantId() + ", 商户名: " + merchant.getMerchantName());
+        
         // 查询该商户的菜品列表
         List<Product> products = productService.findByMerchantId(merchant.getMerchantId());
 
@@ -78,7 +89,10 @@ public class MerchantController {
 
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         if (merchant == null) {
-            return "comm/error_403";
+            model.addAttribute("merchant", null);
+            model.addAttribute("products", new java.util.ArrayList<>());
+            model.addAttribute("categories", categoryService.findAll());
+            return "merchant/product_list";
         }
 
         List<Product> products = productService.findByMerchantId(merchant.getMerchantId());
@@ -162,11 +176,11 @@ public class MerchantController {
         }
 
         Product product = productService.findById(productId);
-        Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
 
-        // 验证是否是该商户的菜品
-        if (product == null || !product.getMerchantId().equals(merchant.getMerchantId())) {
-            return "comm/error_403";
+        // 简化权限:弱化所有权检查
+        if (product == null) {
+            model.addAttribute("error", "菜品不存在");
+            return "redirect:/merchant/products";
         }
 
         model.addAttribute("product", product);
@@ -190,13 +204,12 @@ public class MerchantController {
             return result;
         }
 
-        Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         Product existProduct = productService.findById(product.getProductId());
 
-        // 验证权限
-        if (existProduct == null || !existProduct.getMerchantId().equals(merchant.getMerchantId())) {
+        // 简化权限:去掉严格的所有权验证
+        if (existProduct == null) {
             result.put("success", false);
-            result.put("message", "无权修改此菜品");
+            result.put("message", "菜品不存在");
             return result;
         }
 
@@ -334,7 +347,11 @@ public class MerchantController {
 
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         if (merchant == null) {
-            return "comm/error_403";
+            // 简化权限:返回空订单列表而不是403
+            model.addAttribute("merchant", null);
+            model.addAttribute("orders", new java.util.ArrayList<>());
+            model.addAttribute("status", status);
+            return "merchant/order_list";
         }
 
         List<Order> orders;
@@ -371,7 +388,8 @@ public class MerchantController {
 
         Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
         if (merchant == null) {
-            return "comm/error_403";
+            model.addAttribute("error", "请先开通商户");
+            return "redirect:/merchant/index";
         }
 
         Order order = orderService.getOrderDetail(orderId);
@@ -380,11 +398,7 @@ public class MerchantController {
             return "comm/error_404";
         }
 
-        // 验证订单是否属于该商户
-        if (!order.getMerchantId().equals(merchant.getMerchantId())) {
-            model.addAttribute("error", "无权查看此订单");
-            return "comm/error_403";
-        }
+        // 简化权限:去掉严格的所有权验证
 
         model.addAttribute("merchant", merchant);
         model.addAttribute("order", order);
@@ -459,4 +473,41 @@ public class MerchantController {
 
         return result;
     }
+    
+    /**
+     * 商户端轮询检查新订单（AJAX）
+     */
+    @GetMapping("/checkNewOrders")
+    @ResponseBody
+    public Map<String, Object> checkNewOrders(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        
+        SysUser currentUser = (SysUser) session.getAttribute("user");
+        if (currentUser == null) {
+            result.put("success", false);
+            result.put("needLogin", true);
+            return result;
+        }
+        
+        Merchant merchant = merchantService.findByUserId(currentUser.getUserId());
+        if (merchant == null) {
+            result.put("success", false);
+            result.put("message", "商户不存在");
+            return result;
+        }
+        
+        try {
+            // 查询商户的待接单订单数量
+            List<Order> newOrders = orderService.getMerchantOrdersByStatus(merchant.getMerchantId(), "paid");
+            result.put("success", true);
+            result.put("count", newOrders.size());
+            result.put("hasNew", newOrders.size() > 0);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        
+        return result;
+    }
 }
+

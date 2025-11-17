@@ -153,32 +153,32 @@
                             <th>订单号</th>
                             <th>用户</th>
                             <th>商户</th>
-                            <th>总金额</th>
-                            <th>状态</th>
-                            <th>创建时间</th>
-                            <th>操作</th>
+                            <th>金额</th>
+                            <th>订单状态</th>
+                            <th>下单时间</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="order : ${recentOrders}">
-                            <td th:text="${order.orderNumber}">ORD001</td>
-                            <td th:text="${order.userName}">用户A</td>
-                            <td th:text="${order.merchantName}">商户A</td>
-                            <td th:text="'¥' + ${order.totalPrice}">¥100</td>
+                            <td th:text="${order.orderNo}">20250101000001</td>
+                            <td th:text="${order.userName != null ? order.userName : order.userId}">用户</td>
+                            <td th:text="${order.merchantName}">xxx餐厅</td>
+                            <td>￥<span th:text="${order.actualAmount}">50.00</span></td>
                             <td>
-                                <span th:if="${order.status == 0}" class="label label-warning">待支付</span>
-                                <span th:if="${order.status == 1}" class="label label-info">待配送</span>
-                                <span th:if="${order.status == 2}" class="label label-primary">配送中</span>
-                                <span th:if="${order.status == 3}" class="label label-success">已完成</span>
-                                <span th:if="${order.status == 4}" class="label label-danger">已取消</span>
+                                <span th:if="${order.orderStatus == 'pending'}" class="label label-default">待接单</span>
+                                <span th:if="${order.orderStatus == 'paid'}" class="label label-info">已支付</span>
+                                <span th:if="${order.orderStatus == 'accepted'}" class="label label-primary">已接单</span>
+                                <span th:if="${order.orderStatus == 'preparing'}" class="label label-warning">准备中</span>
+                                <span th:if="${order.orderStatus == 'ready'}" class="label label-info">待配送</span>
+                                <span th:if="${order.orderStatus == 'delivering'}" class="label label-primary">配送中</span>
+                                <span th:if="${order.orderStatus == 'delivered'}" class="label label-success">已送达</span>
+                                <span th:if="${order.orderStatus == 'completed'}" class="label label-success">已完成</span>
+                                <span th:if="${order.orderStatus == 'cancelled'}" class="label label-danger">已取消</span>
                             </td>
-                            <td th:text="${order.createTime}">2025-01-01 12:00</td>
-                            <td>
-                                <a th:href="@{/admin/orders/{id}(id=${order.orderId})}" class="btn btn-xs btn-info">查看</a>
-                            </td>
+                            <td th:text="${order.createTime != null ? order.createTime : '-'}">2025-01-01 12:00</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(recentOrders)}">
-                            <td colspan="7" class="text-center">暂无订单数据</td>
+                            <td colspan="6" class="text-center">暂无订单数据</td>
                         </tr>
                     </tbody>
                 </table>

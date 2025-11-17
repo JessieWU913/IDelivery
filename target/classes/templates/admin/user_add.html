@@ -60,11 +60,14 @@
                     <label for="roleId">角色 <span class="text-danger">*</span></label>
                     <select class="form-control" id="roleId" name="roleId" required>
                         <option value="">请选择角色</option>
+                        <!-- 排除商户角色(roleId=3),商户请通过"商户管理-添加商户"创建 -->
                         <option th:each="role : ${roles}" 
+                                th:if="${role.roleId != 3}"
                                 th:value="${role.roleId}" 
                                 th:text="${role.roleName}">
                         </option>
                     </select>
+                    <small class="text-muted">注意: 如需创建商户,请前往"商户管理"页面</small>
                 </div>
                 
                 <div class="form-group">

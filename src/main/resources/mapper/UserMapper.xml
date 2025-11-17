@@ -5,7 +5,7 @@
 <mapper namespace="cs.qqq.Mapper.UserMapper">
 
 
-    <insert id="saveUser">
+    <insert id="saveUser" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO sys_user (username, password, role_id, phone, email, status)
         VALUES (#{userName}, #{password}, #{roleId}, #{phone}, #{email}, #{status})
     </insert>
@@ -54,7 +54,7 @@
             AND u.username LIKE CONCAT('%',#{userName},'%')
         </if>
         <if test="phonenumber != null and phonenumber !=''">
-            AND u.phonenumber = #{phonenumber}
+            AND u.phone = #{phonenumber}
         </if>
         <if test="beginTime != null and beginTime !=''   ">
             AND u.create_time &gt;= #{beginTime}

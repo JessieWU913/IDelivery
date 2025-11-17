@@ -98,7 +98,6 @@
                         <th>角色</th>
                         <th>手机号</th>
                         <th>邮箱</th>
-                        <th>状态</th>
                         <th>创建时间</th>
                         <th>操作</th>
                     </tr>
@@ -116,25 +115,11 @@
                         </td>
                         <td th:text="${user.phone}">-</td>
                         <td th:text="${user.email}">-</td>
-                        <td>
-                            <span th:if="${user.status == '1'}" class="label label-success">正常</span>
-                            <span th:if="${user.status == '0'}" class="label label-danger">禁用</span>
-                        </td>
                         <td th:text="${user.createTime}">2025-01-01</td>
                         <td>
                             <a th:href="@{'/admin/users/edit/' + ${user.userId}}" class="btn btn-xs btn-primary">
                                 <i class="fa fa-edit"></i> 编辑
                             </a>
-                            <button class="btn btn-xs btn-warning" 
-                                    th:if="${user.status == '1'}"
-                                    th:onclick="'updateStatus(' + ${user.userId} + ', \'0\')'">
-                                <i class="fa fa-ban"></i> 禁用
-                            </button>
-                            <button class="btn btn-xs btn-success" 
-                                    th:if="${user.status == '0'}"
-                                    th:onclick="'updateStatus(' + ${user.userId} + ', \'1\')'">
-                                <i class="fa fa-check"></i> 启用
-                            </button>
                             <button class="btn btn-xs btn-danger" 
                                     th:onclick="'deleteUser(' + ${user.userId} + ')'">
                                 <i class="fa fa-trash"></i> 删除
@@ -142,7 +127,7 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(users)}">
-                        <td colspan="8" class="text-center">暂无用户数据</td>
+                        <td colspan="7" class="text-center">暂无用户数据</td>
                     </tr>
                 </tbody>
             </table>

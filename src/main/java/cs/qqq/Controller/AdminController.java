@@ -1,5 +1,6 @@
 package cs.qqq.Controller;
 
+import cs.qqq.Entity.Merchant;
 import cs.qqq.Entity.SysRole;
 import cs.qqq.Entity.SysUser;
 import cs.qqq.Mapper.MerchantMapper;
@@ -59,9 +60,9 @@ public class AdminController {
         model.addAttribute("totalProducts", totalProducts);
         model.addAttribute("totalOrders", totalOrders);
 
-        // 获取最近订单（可选）
-        // List<Order> recentOrders = orderMapper.getRecentOrders(10);
-        // model.addAttribute("recentOrders", recentOrders);
+        // 获取最近5条订单
+        List<java.util.Map<String, Object>> recentOrders = orderMapper.getRecentOrders(5);
+        model.addAttribute("recentOrders", recentOrders);
 
         return "admin/index";
     }
@@ -120,7 +121,7 @@ public class AdminController {
             result.put("message", status.equals("0") ? "用户已启用" : "用户已禁用");
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "操作失败: " + e.getMessage());
+            result.put("message", "操作失败：" + e.getMessage());
         }
         return result;
     }
@@ -140,7 +141,7 @@ public class AdminController {
                 return result;
             }
             
-            // 不允许删除管理员自己
+            // 不允许删除管理员
             if (user.getRoleId() != null && (user.getRoleId() == 1 || user.getRoleId() == 2)) {
                 result.put("success", false);
                 result.put("message", "不能删除管理员用户");
@@ -163,10 +164,87 @@ public class AdminController {
      */
     @GetMapping("/merchants")
     public String merchants(Model model) {
-        // 获取所有商户（角色ID=3）
-        List<SysUser> merchantList = userMapper.getUsersByRoleId(3L);
+        // 获取所有商户信息（包含关联的用户名）
+        List<Map<String, Object>> merchantList = merchantMapper.findAllWithUserInfo();
         model.addAttribute("merchants", merchantList);
         return "admin/merchant_list";
+    }
+    
+    /**
+     * 添加商户页面
+     */
+    @GetMapping("/merchants/add")
+    public String addMerchantPage() {
+        return "admin/merchant_add";
+    }
+    
+    /**
+     * 创建商户（同时创建用户账号和商户信息）
+     */
+    @PostMapping("/merchants/add")
+    @ResponseBody
+    public Map<String, Object> addMerchant(@RequestBody Map<String, Object> params) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            System.out.println("开始创建商户，参数: " + params);
+            
+            // 1. 创建用户账号（角色ID=3表示商户）
+            SysUser user = new SysUser();
+            user.setUserName((String) params.get("username"));
+            user.setPassword((String) params.get("password"));
+            user.setRoleId(3L); // 商户角色
+            user.setPhone((String) params.get("phone"));
+            user.setStatus("1"); // 设置状态为启用
+            
+            // 检查用户名是否已存在
+            SysUser existUser = userMapper.findByUsername(user.getUserName());
+            if (existUser != null) {
+                result.put("success", false);
+                result.put("message", "用户名已存在");
+                return result;
+            }
+            
+            // 插入用户
+            userMapper.saveUser(user);
+            System.out.println("用户创建成功，用户ID: " + user.getUserId());
+            
+            if (user.getUserId() == null) {
+                result.put("success", false);
+                result.put("message", "用户创建失败");
+                return result;
+            }
+            
+            // 2. 创建商户信息
+            Merchant merchant = new Merchant();
+            merchant.setUserId(user.getUserId()); // 关联用户ID
+            merchant.setMerchantName((String) params.get("merchantName"));
+            merchant.setPhone((String) params.get("phone"));
+            merchant.setAddress((String) params.get("address"));
+            merchant.setDescription((String) params.get("description"));
+            merchant.setBusinessHours((String) params.get("businessHours"));
+            merchant.setStatus(Integer.parseInt(params.get("status").toString()));
+            merchant.setRating(new java.math.BigDecimal("5.0")); // 默认评分
+            merchant.setSales(0); // 默认销量
+            
+            System.out.println("准备插入商户信息: " + merchant);
+            int merchantResult = merchantMapper.insert(merchant);
+            System.out.println("商户插入结果: " + merchantResult + ", 商户ID: " + merchant.getMerchantId());
+            
+            if (merchantResult > 0) {
+                result.put("success", true);
+                result.put("message", "商户创建成功");
+                result.put("userId", user.getUserId());
+                result.put("merchantId", merchant.getMerchantId());
+            } else {
+                result.put("success", false);
+                result.put("message", "商户信息创建失败");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "操作失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
     }
 
     /**

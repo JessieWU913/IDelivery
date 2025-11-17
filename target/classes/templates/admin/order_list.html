@@ -52,7 +52,6 @@
                         <th>用户</th>
                         <th>商户</th>
                         <th>金额</th>
-                        <th>支付状态</th>
                         <th>订单状态</th>
                         <th>下单时间</th>
                     </tr>
@@ -60,13 +59,9 @@
                 <tbody>
                     <tr th:each="order : ${orders}">
                         <td th:text="${order.orderNo}">20250101000001</td>
-                        <td th:text="${order.userName}">user001</td>
+                        <td th:text="${order.userId}">user001</td>
                         <td th:text="${order.merchantName}">xxx餐厅</td>
-                        <td>¥<span th:text="${order.actualAmount}">50.00</span></td>
-                        <td>
-                            <span th:if="${order.paymentStatus == 'unpaid'}" class="label label-warning">未支付</span>
-                            <span th:if="${order.paymentStatus == 'paid'}" class="label label-success">已支付</span>
-                        </td>
+                        <td>￥<span th:text="${order.actualAmount}">50.00</span></td>
                         <td>
                             <span th:if="${order.orderStatus == 'pending'}" class="label label-default">待接单</span>
                             <span th:if="${order.orderStatus == 'paid'}" class="label label-info">已支付</span>
@@ -81,7 +76,7 @@
                         <td th:text="${order.createTime != null ? order.createTime : '-'}">2025-01-01 12:00</td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(orders)}">
-                        <td colspan="7" class="text-center">暂无订单数据</td>
+                        <td colspan="6" class="text-center">暂无订单数据</td>
                     </tr>
                 </tbody>
             </table>

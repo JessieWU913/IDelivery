@@ -3,56 +3,256 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>登录系统后台</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>用户登录 - 在线点餐系统</title>
     <meta http-equiv="Cache-Control" content="no-siteapp"/>
-    <link rel="shortcut icon" th:href="@{/user/img/bloglogo.jpg}"/>
-
+    
     <script th:src="@{/assets/js/jquery.min.js}"></script>
     <script th:src="@{/assets/js/amazeui.min.js}"></script>
     <link rel="stylesheet" th:href="@{/assets/css/amazeui.min.css}"/>
-    <link rel="stylesheet" th:href="@{/assets/css/app.css}"/>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-wrapper {
+            width: 100%;
+            max-width: 480px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 50px 45px;
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-title {
+            color: #667eea;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .login-subtitle {
+            color: #999;
+            font-size: 15px;
+        }
+        
+        .error-msg {
+            background: linear-gradient(135deg, #ffeaea 0%, #ffe0e0 100%);
+            color: #d9534f;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            border-left: 5px solid #d9534f;
+            font-size: 14px;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .form-group {
+            margin-bottom: 28px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .form-input:focus {
+            border-color: #667eea;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-input::placeholder {
+            color: #bbb;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .footer-text {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+        
+        .feature-item {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .feature-item i {
+            font-size: 24px;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: block;
+        }
+    </style>
 </head>
-
 <body>
-
-<div class="log">
-    <div class="am-g">
-        <div class="am-u-lg-3 am-u-md-6 am-u-sm-8 am-u-sm-centered log-content">
-            <h1 class="log-title am-animation-slide-top" style="color: black;" >欢迎回来</h1>
-            <br>
-            <div th:if="${param.error}" >用户名或密码错误!</div>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-header">
+                <h1 class="login-title">欢迎回来</h1>
+                <p class="login-subtitle">请登录您的账户</p>
+            </div>
+            
+            <div th:if="${param.error}" class="error-msg">
+                ⚠️ 用户名或密码错误，请重试！
+            </div>
+            
             <form class="am-form" id="loginForm" th:action="@{/login}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <div>
-                    <input type="hidden" name="url" >
+                <input type="hidden" name="url">
+                
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <div class="input-wrapper">
+                        <input type="text" 
+                               class="form-input" 
+                               name="username" 
+                               placeholder="请输入用户名"
+                               autocomplete="username"
+                               required />
+                    </div>
                 </div>
-                <div class="am-input-group am-radius am-animation-slide-left">用户名
-                    <input type="text" class="am-radius" name="username" /></input>
-                    <span class="am-input-group-label log-icon am-radius">
-                        <i class="am-icon-user am-icon-sm am-icon-fw"></i>
-                    </span>
+                
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <div class="input-wrapper">
+                        <input type="password" 
+                               class="form-input" 
+                               name="password" 
+                               placeholder="请输入密码"
+                               autocomplete="current-password"
+                               required />
+                    </div>
                 </div>
-                <br>
-                <div class="am-input-group am-animation-slide-left log-animation-delay">密码
-                    <input type="password" class="am-form-field am-radius log-input" name="password" ></input>
-                    <span class="am-input-group-label log-icon am-radius">
-                        <i class="am-icon-lock am-icon-sm am-icon-fw"></i>
-                    </span>
-                </div>
-                <div style="padding-top: 10px;">
-                    <input type="submit" 
-                           class="am-btn am-btn-primary am-btn-block am-btn-lg am-radius am-animation-slide-bottom log-animation-delay" >登录</input>
-                </div>
+                
+                <button type="submit" class="login-btn">
+                    登录
+                </button>
             </form>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <i class="am-icon-shield"></i>
+                    安全可靠
+                </div>
+                <div class="feature-item">
+                    <i class="am-icon-bolt"></i>
+                    快速便捷
+                </div>
+                <div class="feature-item">
+                    <i class="am-icon-heart"></i>
+                    优质服务
+                </div>
+            </div>
         </div>
+        
+        <p class="footer-text">
+            © <span th:text="${#dates.format(new java.util.Date().getTime(), 'yyyy')}"></span> 在线点餐系统 · 让美食触手可及
+        </p>
     </div>
-
-    <footer class="log-footer">
-        <p style="margin: 30px; color: #2E2D3C"><time class="comment-time" th:text="${#dates.format(new java.util.Date().getTime(), 'yyyy')}"></time> </p>
-    </footer>
-</div>
 </body>
 </html>

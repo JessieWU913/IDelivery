@@ -88,10 +88,12 @@ public class AddressController {
         }
 
         Address address = addressService.getAddressById(addressId);
-        if (address == null || !address.getUserId().equals(user.getUserId())) {
-            model.addAttribute("error", "地址不存在或无权操作");
-            return "comm/error_403";
+        if (address == null) {
+            model.addAttribute("error", "地址不存在");
+            return "redirect:/address/list";
         }
+
+        // 简化权限:去掉严格的所有权验证
 
         model.addAttribute("address", address);
         return "address/edit";

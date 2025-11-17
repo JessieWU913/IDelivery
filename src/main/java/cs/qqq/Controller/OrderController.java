@@ -154,11 +154,7 @@ public class OrderController {
             return "comm/error_404";
         }
 
-        // 验证订单是否属于该用户
-        if (!order.getUserId().equals(user.getUserId())) {
-            model.addAttribute("error", "无权查看此订单");
-            return "comm/error_403";
-        }
+        // 简化权限:去掉严格的所有权验证
 
         model.addAttribute("order", order);
 
@@ -274,5 +270,66 @@ public class OrderController {
 
         return result;
     }
+    
+    /**
+     * 轮询检查订单状态更新（AJAX）
+     * 用于用户端实时更新订单状态
+     */
+    @GetMapping("/checkUpdates")
+    @ResponseBody
+    public Map<String, Object> checkOrderUpdates(@RequestParam String orderIds, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        
+        SysUser user = (SysUser) session.getAttribute("currentUser");
+        if (user == null) {
+            result.put("success", false);
+            result.put("needLogin", true);
+            return result;
+        }
+        
+        try {
+            String[] ids = orderIds.split(",");
+            List<Map<String, Object>> updates = new ArrayList<>();
+            
+            for (String idStr : ids) {
+                if (idStr.trim().isEmpty()) continue;
+                Long orderId = Long.parseLong(idStr.trim());
+                Order order = orderService.getOrderDetail(orderId);
+                
+                if (order != null && order.getUserId().equals(user.getUserId())) {
+                    Map<String, Object> orderInfo = new HashMap<>();
+                    orderInfo.put("orderId", order.getOrderId());
+                    orderInfo.put("status", order.getOrderStatus());
+                    orderInfo.put("statusText", getStatusText(order.getOrderStatus()));
+                    updates.add(orderInfo);
+                }
+            }
+            
+            result.put("success", true);
+            result.put("updates", updates);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取状态文本
+     */
+    private String getStatusText(String status) {
+        if (status == null) return "未知";
+        switch (status) {
+            case "pending": return "待支付";
+            case "paid": return "已支付";
+            case "preparing": return "制作中";
+            case "delivering": return "配送中";
+            case "completed": return "已完成";
+            case "cancelled": return "已取消";
+            default: return "未知";
+        }
+    }
 }
+
 

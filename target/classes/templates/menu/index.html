@@ -360,6 +360,30 @@
 </div>
 
 <script>
+// 全局函数：搜索功能（供HTML onclick调用）
+function performSearch() {
+    var keyword = $('#searchInput').val().trim();
+    if (keyword === '') {
+        // 清空搜索，显示所有菜品
+        $('.product-card').show();
+        filterAndSort();
+    } else {
+        // 前端搜索：搜索菜品名称或商户名称
+        $('.product-card').each(function() {
+            var productName = $(this).find('.product-name').text().toLowerCase();
+            var merchantName = ($(this).data('merchant-name') || '').toLowerCase();
+            var searchKey = keyword.toLowerCase();
+            
+            if (productName.indexOf(searchKey) !== -1 || merchantName.indexOf(searchKey) !== -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+        checkEmpty();
+    }
+}
+
 $(document).ready(function() {
     
     // 设置AJAX请求的CSRF token
@@ -419,21 +443,19 @@ $(document).ready(function() {
         sortProducts();
     });
     
-    // 搜索功能 - 点击按钮搜索
-    function performSearch() {
-        var keyword = $('#searchInput').val().trim();
-        if (keyword === '') {
-            filterAndSort();
-        } else {
-            searchProducts(keyword);
-        }
-    }
-    
     // 支持回车键搜索
     $('#searchInput').on('keypress', function(e) {
         if (e.which === 13) { // Enter键
             e.preventDefault();
             performSearch();
+        }
+    });
+    
+    // 监听搜索框变化，为空时显示所有
+    $('#searchInput').on('input', function() {
+        var keyword = $(this).val().trim();
+        if (keyword === '') {
+            performSearch(); // 触发搜索以显示所有
         }
     });
     

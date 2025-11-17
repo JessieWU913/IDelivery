@@ -30,7 +30,7 @@
         FROM t_product p
         LEFT JOIN t_category c ON p.category_id = c.category_id
         LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
-        WHERE p.status = '1'
+        WHERE p.status = '1' AND m.status = 1
         ORDER BY p.product_id DESC
     </select>
 
@@ -40,7 +40,7 @@
         FROM t_product p
         LEFT JOIN t_category c ON p.category_id = c.category_id
         LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
-        WHERE p.category_id = #{categoryId} AND p.status = '1'
+        WHERE p.category_id = #{categoryId} AND p.status = '1' AND m.status = 1
         ORDER BY p.sales DESC
     </select>
 
@@ -59,7 +59,7 @@
         FROM t_product p
         LEFT JOIN t_category c ON p.category_id = c.category_id
         LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
-        WHERE p.status = '1'
+        WHERE p.status = '1' AND m.status = 1
         <if test="keyword != null and keyword != ''">
             AND p.product_name LIKE CONCAT('%', #{keyword}, '%')
         </if>
@@ -72,7 +72,7 @@
         FROM t_product p
         LEFT JOIN t_category c ON p.category_id = c.category_id
         LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
-        WHERE p.is_recommend = '1' AND p.status = '1'
+        WHERE p.is_recommend = '1' AND p.status = '1' AND m.status = 1
         ORDER BY p.sales DESC
         LIMIT 10
     </select>
@@ -83,7 +83,7 @@
         FROM t_product p
         LEFT JOIN t_category c ON p.category_id = c.category_id
         LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
-        WHERE p.status = '1'
+        WHERE p.status = '1' AND m.status = 1
         ORDER BY p.sales DESC
         LIMIT #{limit}
     </select>

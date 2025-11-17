@@ -77,8 +77,13 @@
             </div>
 
             <div class="wrapper wrapper-content">
+                <!-- 警告信息 -->
+                <div th:if="${warning}" class="alert alert-warning" role="alert">
+                    <i class="fa fa-exclamation-triangle"></i> <span th:text="${warning}">警告信息</span>
+                </div>
+                
                 <!-- 商户信息卡片 -->
-                <div class="merchant-header">
+                <div class="merchant-header" th:if="${merchant != null && merchant.merchantId != null}">
                     <div class="merchant-info">
                         <h2 th:text="${merchant.merchantName}">商户名称</h2>
                         <p th:text="${merchant.description}">商户简介</p>

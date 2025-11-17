@@ -279,6 +279,44 @@
             }
         });
     }
+    
+    // 商户端轮询检查新订单
+    let pollInterval;
+    function startPolling() {
+        pollInterval = setInterval(() => {
+            $.ajax({
+                url: '/merchant/checkNewOrders',
+                type: 'GET',
+                success: function(res) {
+                    if (res.needLogin) {
+                        clearInterval(pollInterval);
+                        alert('登录已过期，请重新登录');
+                        location.href = '/login.html';
+                        return;
+                    }
+                    if (res.success && res.hasNew) {
+                        // 有新订单，刷新页面
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    // 发生错误时停止轮询
+                    clearInterval(pollInterval);
+                }
+            });
+        }, 5000); // 每5秒检查一次
+    }
+    
+    // 页面加载时启动轮询
+    $(document).ready(function() {
+        startPolling();
+    });
+    
+    // 页面关闭时停止轮询
+    window.addEventListener('beforeunload', function() {
+        if (pollInterval) clearInterval(pollInterval);
+    });
 </script>
 </body>
 </html>
+

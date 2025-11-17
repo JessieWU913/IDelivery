@@ -33,6 +33,11 @@ public interface MerchantMapper {
     List<Merchant> findAll();
     
     /**
+     * 查询所有商户及关联用户信息
+     */
+    List<java.util.Map<String, Object>> findAllWithUserInfo();
+    
+    /**
      * 添加商户
      */
     int insert(Merchant merchant);

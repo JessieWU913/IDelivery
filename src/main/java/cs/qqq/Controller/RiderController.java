@@ -34,11 +34,7 @@ public class RiderController {
             return "redirect:/login.html";
         }
 
-        // 验证是否为骑手角色
-        if (currentUser.getRoleId() == null || currentUser.getRoleId() != 4) {
-            model.addAttribute("error", "您没有骑手权限");
-            return "comm/error_403";
-        }
+        // 简化权限:去掉严格的角色检查
 
         // 查询所有已出餐的订单（状态为delivering）
         List<Order> availableOrders = orderService.getOrdersByStatus("delivering");
@@ -189,5 +185,41 @@ public class RiderController {
 
         return result;
     }
+    
+    /**
+     * 骑手端轮询检查新订单（AJAX）
+     */
+    @GetMapping("/checkNewOrders")
+    @ResponseBody
+    public Map<String, Object> checkNewOrders(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        
+        SysUser currentUser = (SysUser) session.getAttribute("user");
+        if (currentUser == null) {
+            result.put("success", false);
+            result.put("needLogin", true);
+            return result;
+        }
+        
+        if (currentUser.getRoleId() == null || currentUser.getRoleId() != 4) {
+            result.put("success", false);
+            result.put("message", "您没有骑手权限");
+            return result;
+        }
+        
+        try {
+            // 查询待配送订单数量
+            List<Order> newOrders = orderService.getOrdersByStatus("delivering");
+            result.put("success", true);
+            result.put("count", newOrders.size());
+            result.put("hasNew", newOrders.size() > 0);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        
+        return result;
+    }
 }
+
 

@@ -38,6 +38,28 @@
     <select id="findAll" resultMap="MerchantResultMap">
         SELECT * FROM t_merchant ORDER BY create_time DESC
     </select>
+    
+    <!-- 查询所有商户及关联用户信息 -->
+    <select id="findAllWithUserInfo" resultType="java.util.HashMap">
+        SELECT 
+            m.merchant_id AS merchantId,
+            m.user_id AS userId,
+            m.merchant_name AS merchantName,
+            m.description,
+            m.logo,
+            m.address,
+            m.phone,
+            m.business_hours AS businessHours,
+            m.status,
+            m.rating,
+            m.sales,
+            m.create_time AS createTime,
+            m.update_time AS updateTime,
+            u.username AS userName
+        FROM t_merchant m
+        LEFT JOIN sys_user u ON m.user_id = u.user_id
+        ORDER BY m.create_time DESC
+    </select>
 
     <!-- 添加商户 -->
     <insert id="insert" parameterType="cs.qqq.Entity.Merchant" useGeneratedKeys="true" keyProperty="merchantId">

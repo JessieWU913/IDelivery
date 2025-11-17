@@ -60,9 +60,7 @@
                         <th>角色ID</th>
                         <th>角色名称</th>
                         <th>角色描述</th>
-                        <th>状态</th>
                         <th>创建时间</th>
-                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,34 +68,12 @@
                         <td th:text="${role.roleId}">1</td>
                         <td th:text="${role.roleName}">超级管理员</td>
                         <td th:text="${role.roleDesc}">-</td>
-                        <td>
-                            <span th:if="${role.status == '1'}" class="label label-success">正常</span>
-                            <span th:if="${role.status == '0'}" class="label label-danger">禁用</span>
-                        </td>
                         <td th:text="${role.createTime}">2025-01-01</td>
-                        <td>
-                            <a th:href="@{'/admin/roles/edit/' + ${role.roleId}}" class="btn btn-xs btn-primary">
-                                <i class="fa fa-edit"></i> 编辑
-                            </a>
-                            <button class="btn btn-xs btn-warning" 
-                                    th:if="${role.status == '1' && role.roleId > 5}"
-                                    th:onclick="'updateStatus(' + ${role.roleId} + ', \'0\')'">
-                                <i class="fa fa-ban"></i> 禁用
-                            </button>
-                            <button class="btn btn-xs btn-success" 
-                                    th:if="${role.status == '0' && role.roleId > 5}"
-                                    th:onclick="'updateStatus(' + ${role.roleId} + ', \'0\')'">
-                                <i class="fa fa-check"></i> 启用
-                            </button>
-                            <button class="btn btn-xs btn-danger" 
-                                    th:if="${role.roleId > 5}"
-                                    th:onclick="'deleteRole(' + ${role.roleId} + ')'">
-                                <i class="fa fa-trash"></i> 删除
-                            </button>
-                            <span th:if="${role.roleId <= 5}" class="text-muted">系统角色</span>
-                        </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(roles)}">
+                        <td colspan="4" class="text-center">暂无角色数据</td>
+                    </tr>
+                </tbody>
                         <td colspan="7" class="text-center">暂无角色数据</td>
                     </tr>
                 </tbody>
