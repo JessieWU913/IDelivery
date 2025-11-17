@@ -168,5 +168,32 @@
         SET sales = sales + #{quantity}
         WHERE product_id = #{productId}
     </update>
+    
+    <!-- 统计所有菜品数量 -->
+    <select id="countAllProducts" resultType="long">
+        SELECT COUNT(*) FROM t_product
+    </select>
+    
+    <!-- 获取所有菜品及商户信息 -->
+    <select id="getAllProductsWithMerchant" resultType="java.util.HashMap">
+        SELECT 
+            p.product_id AS productId,
+            p.product_name AS productName,
+            p.price AS price,
+            p.stock AS stock,
+            p.sales AS sales,
+            p.status AS status,
+            m.merchant_name AS merchantName,
+            c.category_name AS categoryName
+        FROM t_product p
+        LEFT JOIN t_merchant m ON p.merchant_id = m.merchant_id
+        LEFT JOIN t_category c ON p.category_id = c.category_id
+        ORDER BY p.create_time DESC
+    </select>
+    
+    <!-- 更新菜品状态 -->
+    <update id="updateProductStatus">
+        UPDATE t_product SET status = #{status} WHERE product_id = #{productId}
+    </update>
 
 </mapper>

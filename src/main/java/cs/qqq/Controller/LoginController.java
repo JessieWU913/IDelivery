@@ -42,7 +42,7 @@ public class LoginController {
             
             // 根据角色判断跳转页面
             if (user.getRoleId() != null && (user.getRoleId() == 1 || user.getRoleId() == 2)) {
-                return "redirect:/userList";  // 管理员进入后台
+                return "redirect:/admin/index";  // 管理员进入管理后台
             } else if (user.getRoleId() != null && user.getRoleId() == 3) {
                 return "redirect:/merchant/index";  // 商户进入商户管理页面
             } else if (user.getRoleId() != null && user.getRoleId() == 4) {

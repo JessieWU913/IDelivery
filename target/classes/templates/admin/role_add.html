@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>添加角色 - IDelivery</title>
+    
+    <link rel="stylesheet" th:href="@{/back/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/style.min.css}">
+    
+    <style>
+        body { background-color: #f5f5f5; margin-top: 70px; }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/admin/index">IDelivery 管理后台</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="/admin/index">控制台</a></li>
+                <li><a href="/admin/users">用户管理</a></li>
+                <li class="active"><a href="/admin/roles">角色管理</a></li>
+                <li><a href="/admin/merchants">商户管理</a></li>
+                <li><a href="/admin/products">菜品管理</a></li>
+                <li><a href="/admin/orders">订单管理</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/logout">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h2>添加角色</h2>
+        
+        <div class="form-container">
+            <form id="roleForm">
+                <div class="form-group">
+                    <label for="roleName">角色名称 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="roleName" name="roleName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="roleDesc">角色描述</label>
+                    <textarea class="form-control" id="roleDesc" name="roleDesc" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <a href="/admin/roles" class="btn btn-default">
+                        <i class="fa fa-times"></i> 取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
+    <script th:src="@{/back/js/bootstrap.js}"></script>
+    <script>
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+        
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+
+        $('#roleForm').submit(function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                url: '/admin/roles/add',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(result) {
+                    if (result.success) {
+                        alert(result.message);
+                        window.location.href = '/admin/roles';
+                    } else {
+                        alert('操作失败：' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('操作失败，请重试');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

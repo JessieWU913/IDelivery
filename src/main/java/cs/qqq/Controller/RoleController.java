@@ -54,12 +54,9 @@ public class RoleController {
     }
 
     @PostMapping("/updaterole")
-    public String updateuser(HttpServletRequest request, Long roleId,String roleName,Long roleSort,String remark) {//修改
+    public String updateuser(HttpServletRequest request, Long roleId,String roleName,String roleDesc) {//修改
         SysRole role = roleService.findRoleById(roleId);
-        role.setRemark(remark);
-        role.setUpdateBy(((SysUser) request.getSession().getAttribute("currentUser")).getUserName());
-        role.setUpdateTime(LocalDateTime.now());
-        role.setRoleSort(roleSort);
+        role.setRoleDesc(roleDesc);
         role.setRoleName(roleName);
         roleService.updateRole1(role);
 
@@ -76,15 +73,13 @@ public class RoleController {
 
     //新增用户信息
     @PostMapping("/saverole")
-    public String saverole(HttpServletRequest request, String roleName, Long roleSort,  String remark) {
+    public String saverole(HttpServletRequest request, String roleName, String roleDesc) {
 
         SysRole role = new SysRole();
         role.setRoleName(roleName);
-        role.setRemark(remark);
-        role.setRoleSort(roleSort);
+        role.setRoleDesc(roleDesc);
+        role.setStatus("1"); // 1表示启用
 
-        role.setCreateBy(((SysUser) request.getSession().getAttribute("currentUser")).getUserName());
-        role.setCreateTime(LocalDateTime.now());
         roleService.addRole(role);
         return "redirect:/roleList";
 

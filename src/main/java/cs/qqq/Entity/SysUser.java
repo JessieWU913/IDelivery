@@ -8,20 +8,16 @@ import java.time.LocalDateTime;
 @Data
 public class SysUser {
   private Long userId;
-  private Long roleId;
-  private String roleName;
   private String userName;
-  private String email;
-  private String phonenumber;
-  private String sex;
   private String password;
+  private String realName;
+  private String phone;
+  private String email;
+  private Long roleId;
   private String status;
-  private String delFlag;
-  private LocalDateTime loginDate;
-  private String createBy;
   private LocalDateTime createTime;
-  private String updateBy;
   private LocalDateTime updateTime;
-  private String remark;
-  private String pic;
+  
+  // 用于关联查询时显示角色名
+  private String roleName;
 }

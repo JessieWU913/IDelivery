@@ -6,29 +6,8 @@
 
 
     <insert id="saveUser">
-    insert into sys_user
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-        <if test="userName != null and userName != ''">username,</if>
-        <if test="password != null and password != ''">password,</if>
-        <if test="roleId != null">role_id,</if>
-        <if test="phonenumber != null">phonenumber,</if>
-        <if test="pic != null">pic,</if>
-        <if test="email != null">email,</if>
-        <if test="remark != null">remark,</if>
-        <if test="createBy != null">create_by,</if>
-        <if test="createTime != null">create_time,</if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-    <if test="userName != null and userName != ''">#{userName},</if>
-    <if test="password != null and password != ''">#{password},</if>
-    <if test="roleId != null">#{roleId},</if>
-    <if test="phonenumber != null">#{phonenumber},</if>
-    <if test="pic != null">#{pic},</if>
-    <if test="email != null">#{email},</if>
-    <if test="remark != null">#{remark},</if>
-    <if test="createBy != null">#{createBy},</if>
-    <if test="createTime != null">#{createTime},</if>
-    </trim>
+        INSERT INTO sys_user (username, password, role_id, phone, email, status)
+        VALUES (#{userName}, #{password}, #{roleId}, #{phone}, #{email}, #{status})
     </insert>
 
 
@@ -36,8 +15,15 @@
         update sys_user set status=#{status} where user_id=#{userId}
     </update>
     <update id="updateUser1">
-        update sys_user set role_id=#{roleId},username=#{userName},email=#{email},phonenumber=#{phonenumber},password=#{password},update_by=#{updateBy},update_time=#{updateTime},remark=#{remark},pic=#{pic}
-        where user_id=#{userId}
+        UPDATE sys_user 
+        SET role_id = #{roleId},
+            username = #{userName},
+            email = #{email},
+            phone = #{phone}
+            <if test="password != null and password != ''">
+                ,password = #{password}
+            </if>
+        WHERE user_id = #{userId}
     </update>
 
 
@@ -60,7 +46,10 @@
         SELECT *
         FROM sys_user u
         JOIN sys_role r ON u.role_id = r.role_id
-        WHERE r.role_id = #{roleId}
+        WHERE 1=1
+        <if test="roleId != null">
+            AND r.role_id = #{roleId}
+        </if>
         <if test="userName != null and userName!=''">
             AND u.username LIKE CONCAT('%',#{userName},'%')
         </if>
@@ -73,5 +62,20 @@
         <if test="endTime != null and beginTime !='' ">
             AND u.create_time &lt;= #{endTime}
         </if>
+    </select>
+    
+    <!-- 统计所有用户数量 -->
+    <select id="countAllUsers" resultType="long">
+        SELECT COUNT(*) FROM sys_user
+    </select>
+    
+    <!-- 根据角色ID查询用户列表 -->
+    <select id="getUsersByRoleId" resultType="cs.qqq.Entity.SysUser">
+        SELECT * FROM sys_user WHERE role_id = #{roleId}
+    </select>
+    
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" resultType="cs.qqq.Entity.SysUser">
+        SELECT * FROM sys_user WHERE username = #{username}
     </select>
 </mapper>

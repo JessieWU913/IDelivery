@@ -41,6 +41,11 @@ public class RoleServiceImpl implements RoleService {
     public void addRole(SysRole sysRole) {
         roleMapper.addRole(sysRole);
     }
+    
+    @Override
+    public void deleteRole(Long roleId) {
+        roleMapper.deleteRole(roleId);
+    }
 
 
 }

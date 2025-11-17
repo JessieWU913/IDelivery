@@ -51,4 +51,9 @@ public interface MerchantMapper {
      * 更新商户状态
      */
     int updateStatus(@Param("merchantId") Long merchantId, @Param("status") Integer status);
+    
+    /**
+     * 统计所有商户数量
+     */
+    long countAllMerchants();
 }

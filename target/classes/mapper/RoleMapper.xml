@@ -51,5 +51,9 @@
         from sys_role
         where role_id = #{roleId}
     </select>
+    
+    <delete id="deleteRole">
+        DELETE FROM sys_role WHERE role_id = #{roleId}
+    </delete>
 
 </mapper>

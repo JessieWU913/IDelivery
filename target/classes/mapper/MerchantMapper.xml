@@ -76,5 +76,10 @@
     <update id="updateStatus">
         UPDATE t_merchant SET status = #{status} WHERE merchant_id = #{merchantId}
     </update>
+    
+    <!-- 统计所有商户数量 -->
+    <select id="countAllMerchants" resultType="long">
+        SELECT COUNT(*) FROM t_merchant
+    </select>
 
 </mapper>

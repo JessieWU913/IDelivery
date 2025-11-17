@@ -4,6 +4,7 @@ import cs.qqq.Entity.Product;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 菜品Mapper接口
@@ -75,4 +76,19 @@ public interface ProductMapper {
      * 更新菜品销量
      */
     void updateSales(@Param("productId") Long productId, @Param("quantity") Integer quantity);
+    
+    /**
+     * 统计所有菜品数量
+     */
+    long countAllProducts();
+    
+    /**
+     * 获取所有菜品及商户信息
+     */
+    List<Map<String, Object>> getAllProductsWithMerchant();
+    
+    /**
+     * 更新菜品状态
+     */
+    void updateProductStatus(@Param("productId") Long productId, @Param("status") Integer status);
 }

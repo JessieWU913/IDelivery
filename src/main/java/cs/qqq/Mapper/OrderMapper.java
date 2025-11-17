@@ -76,4 +76,14 @@ public interface OrderMapper {
      * 更新订单信息
      */
     int updateOrder(Order order);
+    
+    /**
+     * 统计所有订单数量
+     */
+    long countAllOrders();
+    
+    /**
+     * 获取所有订单及详细信息
+     */
+    List<java.util.Map<String, Object>> getAllOrdersWithDetails();
 }

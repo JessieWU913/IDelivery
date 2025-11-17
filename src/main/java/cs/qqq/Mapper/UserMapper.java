@@ -2,9 +2,6 @@ package cs.qqq.Mapper;
 
 import cs.qqq.Entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
-
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -28,4 +25,13 @@ public interface UserMapper {
 
     //通过ID删除用户信息
     void deleteUserByID(Long id);
+    
+    // 统计所有用户数量
+    long countAllUsers();
+    
+    // 根据角色ID查询用户列表
+    List<SysUser> getUsersByRoleId(Long roleId);
+    
+    // 根据用户名查询用户
+    SysUser findByUsername(String username);
 }

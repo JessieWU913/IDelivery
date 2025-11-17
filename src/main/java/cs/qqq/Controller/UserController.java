@@ -80,30 +80,15 @@ public class UserController {
     }
 
     @PostMapping("/updateuser")
-    public String updateuser(HttpServletRequest request,MultipartFile[] fileUpload, String username, String password, String roleName, String sex, String phonenumber, String email, String remark, Long userId) {//修改
+    public String updateuser(HttpServletRequest request,MultipartFile[] fileUpload, String username, String password, String roleName, String phone, String email, Long userId) {//修改
         SysUser sysUser=userService.findUserById(userId);
         System.out.println("修改"+sysUser);
         sysUser.setRoleId(Long.parseLong(roleName));
         sysUser.setUserName(username);
         sysUser.setEmail(email);
-        sysUser.setPhonenumber(phonenumber);
-        sysUser.setSex(sex);
-        sysUser.setPassword(password);
-        // 获取当前会话
-        HttpSession session = request.getSession();
-        // 获取当前用户信息
-        SysUser currentUser = (SysUser) session.getAttribute("currentUser");
-        sysUser.setUpdateBy(currentUser.getUserName());
-
-        sysUser.setUpdateTime(LocalDateTime.now());
-        sysUser.setRemark(remark);
-        System.out.println(fileUpload);
-        if (ObjectUtils.isEmpty(fileUpload) ) {
-
-        }else {
-            String file=userService.savefile(fileUpload);
-            System.out.println(file);
-            sysUser.setPic(file);
+        sysUser.setPhone(phone);
+        if(password != null && !password.isEmpty()) {
+            sysUser.setPassword(password);
         }
 
         userService.updateUser1(sysUser);
@@ -120,25 +105,16 @@ public class UserController {
 
     // 新增用户信息
     @PostMapping("/saveuser")
-    public String saveuser(HttpServletRequest request, MultipartFile[] fileUpload, String username, String password, String roleName, String sex, String phonenumber, String email, String remark) {
+    public String saveuser(HttpServletRequest request, MultipartFile[] fileUpload, String username, String password, String roleName, String phone, String email) {
         // 初始化用户对象
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
         sysUser.setPassword(password);
         sysUser.setRoleId(Long.parseLong(roleName));
-        sysUser.setSex(sex);
-        sysUser.setPhonenumber(phonenumber);
+        sysUser.setPhone(phone);
         sysUser.setEmail(email);
+        sysUser.setStatus("1"); // 1表示启用
 
-        sysUser.setRemark(remark);
-        // 获取当前会话
-        HttpSession session = request.getSession();
-        // 获取当前用户信息
-        SysUser currentUser = (SysUser) session.getAttribute("currentUser");
-        sysUser.setCreateBy(currentUser.getUserName());
-        sysUser.setCreateTime(LocalDateTime.now());
-        String file=userService.savefile(fileUpload);
-        sysUser.setPic(file);
         userService.saveUser(sysUser);
         return "redirect:/userList";
     }

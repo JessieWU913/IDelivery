@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>管理员控制台 - IDelivery</title>
+    
+    <link rel="stylesheet" th:href="@{/back/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/back/css/style.min.css}">
+    
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .stat-icon {
+            font-size: 48px;
+            color: #ddd;
+            float: right;
+        }
+        .bg-primary-stat { border-left: 4px solid #3498db; }
+        .bg-success-stat { border-left: 4px solid #2ecc71; }
+        .bg-warning-stat { border-left: 4px solid #f39c12; }
+        .bg-danger-stat { border-left: 4px solid #e74c3c; }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .quick-actions {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .quick-actions a {
+            display: inline-block;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/admin/index">IDelivery 管理后台</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/admin/index">控制台</a></li>
+                <li><a href="/admin/users">用户管理</a></li>
+                <li><a href="/admin/roles">角色管理</a></li>
+                <li><a href="/admin/merchants">商户管理</a></li>
+                <li><a href="/admin/products">菜品管理</a></li>
+                <li><a href="/admin/orders">订单管理</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/logout">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid" style="margin-top: 70px;">
+        <div class="page-header">
+            <h2>管理员控制台</h2>
+            <p>欢迎回来，管理员！下面是平台运营数据概览。</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card bg-primary-stat">
+                    <i class="fa fa-users stat-icon"></i>
+                    <div class="stat-number" th:text="${totalUsers}">0</div>
+                    <div class="stat-label">总用户数</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card bg-success-stat">
+                    <i class="fa fa-store stat-icon"></i>
+                    <div class="stat-number" th:text="${totalMerchants}">0</div>
+                    <div class="stat-label">总商户数</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card bg-warning-stat">
+                    <i class="fa fa-cutlery stat-icon"></i>
+                    <div class="stat-number" th:text="${totalProducts}">0</div>
+                    <div class="stat-label">总菜品数</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card bg-danger-stat">
+                    <i class="fa fa-shopping-cart stat-icon"></i>
+                    <div class="stat-number" th:text="${totalOrders}">0</div>
+                    <div class="stat-label">总订单数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="quick-actions">
+            <h4>快捷操作</h4>
+            <a href="/admin/users" class="btn btn-primary">
+                <i class="fa fa-users"></i> 管理用户
+            </a>
+            <a href="/admin/merchants" class="btn btn-success">
+                <i class="fa fa-store"></i> 管理商户
+            </a>
+            <a href="/admin/products" class="btn btn-warning">
+                <i class="fa fa-cutlery"></i> 管理菜品
+            </a>
+            <a href="/admin/orders" class="btn btn-danger">
+                <i class="fa fa-shopping-cart"></i> 管理订单
+            </a>
+        </div>
+
+        <!-- 最近订单 -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4>最近订单</h4>
+            </div>
+            <div class="panel-body">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>用户</th>
+                            <th>商户</th>
+                            <th>总金额</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${recentOrders}">
+                            <td th:text="${order.orderNumber}">ORD001</td>
+                            <td th:text="${order.userName}">用户A</td>
+                            <td th:text="${order.merchantName}">商户A</td>
+                            <td th:text="'¥' + ${order.totalPrice}">¥100</td>
+                            <td>
+                                <span th:if="${order.status == 0}" class="label label-warning">待支付</span>
+                                <span th:if="${order.status == 1}" class="label label-info">待配送</span>
+                                <span th:if="${order.status == 2}" class="label label-primary">配送中</span>
+                                <span th:if="${order.status == 3}" class="label label-success">已完成</span>
+                                <span th:if="${order.status == 4}" class="label label-danger">已取消</span>
+                            </td>
+                            <td th:text="${order.createTime}">2025-01-01 12:00</td>
+                            <td>
+                                <a th:href="@{/admin/orders/{id}(id=${order.orderId})}" class="btn btn-xs btn-info">查看</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentOrders)}">
+                            <td colspan="7" class="text-center">暂无订单数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
+    <script th:src="@{/back/js/bootstrap.js}"></script>
+</body>
+</html>
