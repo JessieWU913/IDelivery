@@ -1,14 +1,35 @@
 <!DOCTYPE html>
+<!-- ========================================
+  订单列表页面（用户端）
+  ========================================
+  功能：
+  1. 显示当前用户的所有订单
+  2. 按状态筛选订单（全部/待支付/制作中/配送中等）
+  3. 订单操作（支付/取消/确认收货）
+  4. 自动轮询更新订单状态（5秒）
+  
+  技术栈：
+  - Thymeleaf：服务端模板引擎，动态渲染数据
+  - jQuery：简化AJAX和DOM操作
+  - CSRF防护：防止跨站请求伪造攻击
+  ======================================== -->
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- CSRF令牌：Spring Security安全机制，POST请求必须携带 -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    
     <title>我的订单 - 外卖系统</title>
+    
+    <!-- 引入CSS和JS库 -->
     <link rel="stylesheet" href="/assets/css/amazeui.min.css">
     <script src="/assets/js/jquery.min.js"></script>
     <script src="/assets/js/amazeui.min.js"></script>
+    
+    <!-- ======== 页面样式 ======== -->
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -218,33 +239,58 @@
     </style>
 </head>
 <body>
+<!-- ======== 主容器 ======== -->
 <div class="order-container">
+    <!-- ======== 页面头部 ======== -->
     <div class="page-header">
         <h1 class="page-title">📦 我的订单</h1>
         <button class="btn btn-secondary" onclick="location.href='/menu/index'">继续购物</button>
     </div>
 
-    <!-- 订单状态筛选 -->
+    <!-- ========================================
+         订单状态筛选标签
+         ========================================
+         Thymeleaf语法说明：
+         - th:classappend：动态添加CSS类
+         - ${status}：后端传递的当前筛选状态
+         - 点击标签 → 跳转URL → 后端重新查询 → 刷新页面
+         ======================================== -->
     <div class="filter-tabs">
+        <!-- 全部订单 -->
         <div class="filter-tab" th:classappend="${status == null || status == ''} ? 'active'"
              onclick="location.href='/order/list'">全部</div>
+        <!-- 待支付：用户刚下单，未付款 -->
         <div class="filter-tab" th:classappend="${status == 'pending'} ? 'active'"
              onclick="location.href='/order/list?status=pending'">待支付</div>
+        <!-- 待接单：已付款，等待商家接单 -->
         <div class="filter-tab" th:classappend="${status == 'paid'} ? 'active'"
              onclick="location.href='/order/list?status=paid'">待接单</div>
+        <!-- 制作中：商家已接单，正在制作 -->
         <div class="filter-tab" th:classappend="${status == 'preparing'} ? 'active'"
              onclick="location.href='/order/list?status=preparing'">制作中</div>
+        <!-- 配送中：商家已出餐，骑手配送 -->
         <div class="filter-tab" th:classappend="${status == 'delivering'} ? 'active'"
              onclick="location.href='/order/list?status=delivering'">配送中</div>
+        <!-- 待确认收货：骑手已送达，等待用户确认 -->
         <div class="filter-tab" th:classappend="${status == 'delivered'} ? 'active'"
              onclick="location.href='/order/list?status=delivered'">待确认收货</div>
+        <!-- 已完成：用户已确认收货 -->
         <div class="filter-tab" th:classappend="${status == 'completed'} ? 'active'"
              onclick="location.href='/order/list?status=completed'">已完成</div>
+        <!-- 已取消：用户取消订单 -->
         <div class="filter-tab" th:classappend="${status == 'cancelled'} ? 'active'"
              onclick="location.href='/order/list?status=cancelled'">已取消</div>
     </div>
 
-    <!-- 订单列表 -->
+    <!-- ========================================
+         订单列表区域
+         ========================================
+         Thymeleaf条件渲染：
+         - th:if：条件为true时才渲染此元素
+         - th:each：循环遍历集合
+         ======================================== -->
+    
+    <!-- 【情况1：订单列表为空】 -->
     <div th:if="${orders == null || orders.size() == 0}" class="empty-orders">
         <div class="empty-orders-icon">📦</div>
         <h3>暂无订单</h3>
@@ -252,15 +298,26 @@
         <button class="btn btn-primary" style="margin-top: 20px;" onclick="location.href='/menu/index'">去购物</button>
     </div>
 
+    <!-- 【情况2：有订单数据】 -->
     <div th:if="${orders != null && orders.size() > 0}">
+        <!-- 循环渲染每个订单 -->
+        <!-- th:each="order : ${orders}" → 类似Java的 for(Order order : orders) -->
+        <!-- th:attr="data-order-id=${order.orderId}" → 设置自定义属性，用于轮询机制 -->
         <div th:each="order : ${orders}" class="order-item order-card" th:attr="data-order-id=${order.orderId}">
+            
+            <!-- ======== 订单头部：订单号、时间、状态 ======== -->
             <div class="order-header">
                 <div class="order-info">
+                    <!-- 订单号 -->
                     <div class="order-no">订单号：<span th:text="${order.orderNo}">ORDER123456</span></div>
+                    <!-- 下单时间：#temporals是Thymeleaf日期格式化工具 -->
                     <div class="order-time" th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm:ss')}">2025-11-10 12:00:00</div>
                 </div>
                 <div>
+                    <!-- 订单状态标签：根据状态显示不同颜色 -->
+                    <!-- th:classappend动态添加状态样式类（status-pending、status-paid等） -->
                     <span class="order-status" th:classappend="'status-' + ${order.orderStatus}">
+                        <!-- th:switch类似Java的switch语句 -->
                         <span th:switch="${order.orderStatus}">
                             <span th:case="'pending'">待支付</span>
                             <span th:case="'paid'">待接单</span>
@@ -274,29 +331,44 @@
                 </div>
             </div>
 
+            <!-- ======== 商户名称 ======== -->
             <div class="merchant-name">🏪 <span th:text="${order.merchantName}">商户名称</span></div>
 
+            <!-- ======== 订单商品列表 ======== -->
             <div class="order-items" th:if="${order.orderItems != null && order.orderItems.size() > 0}">
+                <!-- 循环渲染每个商品 -->
                 <div th:each="item : ${order.orderItems}" class="order-item-row">
                     <span class="item-name" th:text="${item.productName}">商品名称</span>
                     <span class="item-quantity">x<span th:text="${item.quantity}">1</span></span>
+                    <!-- #numbers.formatDecimal(数值, 整数位, 小数位) → 格式化金额 -->
                     <span>¥<span th:text="${#numbers.formatDecimal(item.subtotal, 1, 2)}">0.00</span></span>
                 </div>
             </div>
 
+            <!-- ======== 订单底部：总价、操作按钮 ======== -->
             <div class="order-footer">
+                <!-- 实付金额 -->
                 <div class="order-total">
                     实付：¥<span th:text="${#numbers.formatDecimal(order.actualAmount, 1, 2)}">0.00</span>
                 </div>
+                
+                <!-- 操作按钮：根据订单状态动态显示 -->
                 <div class="order-actions">
+                    <!-- 查看详情按钮（所有订单都显示） -->
                     <button class="btn btn-secondary"
                             th:onclick="'location.href=\'/order/detail/' + ${order.orderId} + '\''">查看详情</button>
+                    
+                    <!-- 立即支付按钮（仅待支付订单显示） -->
                     <button th:if="${order.orderStatus == 'pending'}"
                             class="btn btn-primary"
                             th:onclick="'payOrder(' + ${order.orderId} + ')'">立即支付</button>
+                    
+                    <!-- 取消订单按钮（仅待支付订单显示） -->
                     <button th:if="${order.orderStatus == 'pending'}"
                             class="btn btn-danger"
                             th:onclick="'cancelOrder(' + ${order.orderId} + ')'">取消订单</button>
+                    
+                    <!-- 确认收货按钮（仅已送达订单显示） -->
                     <button th:if="${order.orderStatus == 'delivered'}"
                             class="btn btn-primary"
                             th:onclick="'confirmOrder(' + ${order.orderId} + ')'">确认收货</button>
@@ -306,22 +378,44 @@
     </div>
 </div>
 
+<!-- ========================================
+     JavaScript业务逻辑
+     ========================================
+     功能：
+     1. CSRF令牌自动添加（安全防护）
+     2. 订单操作函数（支付/取消/确认收货）
+     3. 轮询机制（自动更新订单状态）
+     ======================================== -->
 <script>
+    // ========================================
+    // 1. CSRF安全配置
+    // ========================================
+    // Spring Security要求所有POST请求必须携带CSRF令牌
+    // 从meta标签中读取令牌，自动添加到所有AJAX请求头中
     var token = $("meta[name='_csrf']").attr("content");
     var header = $("meta[name='_csrf_header']").attr("content");
     $(document).ajaxSend(function(e, xhr, options) {
-        xhr.setRequestHeader(header, token);
+        xhr.setRequestHeader(header, token); // 设置请求头
     });
 
+    // ========================================
+    // 2. 订单操作函数
+    // ========================================
+    
+    /**
+     * 支付订单
+     * 流程：确认 → 发送POST请求 → 后端处理 → 刷新页面
+     */
     function payOrder(orderId) {
-        if (!confirm('确认支付此订单吗？')) return;
+        if (!confirm('确认支付此订单吗？')) return; // 用户确认
+        
         $.ajax({
-            url: '/order/pay/' + orderId,
-            type: 'POST',
+            url: '/order/pay/' + orderId,  // 后端接口
+            type: 'POST',                  // POST请求
             success: function(res) {
                 if (res.success) {
                     alert('支付成功！');
-                    location.reload();
+                    location.reload();     // 刷新页面显示最新状态
                 } else {
                     alert(res.message || '支付失败');
                 }
@@ -329,14 +423,20 @@
         });
     }
 
+    /**
+     * 取消订单
+     * 流程：输入取消原因 → 确认 → 发送POST请求 → 恢复库存 → 刷新页面
+     */
     function cancelOrder(orderId) {
-        const reason = prompt('请输入取消原因（选填）：');
-        if (reason === null) return;
+        const reason = prompt('请输入取消原因（选填）：'); // 弹出输入框
+        if (reason === null) return; // 用户点击了取消按钮
+        
         if (!confirm('确认取消此订单吗？')) return;
+        
         $.ajax({
             url: '/order/cancel/' + orderId,
             type: 'POST',
-            data: { cancelReason: reason || '用户取消' },
+            data: { cancelReason: reason || '用户取消' }, // 发送取消原因
             success: function(res) {
                 if (res.success) {
                     alert('订单已取消');
@@ -348,8 +448,13 @@
         });
     }
 
+    /**
+     * 确认收货
+     * 流程：确认 → 发送POST请求 → 更新销量 → 完成订单 → 刷新页面
+     */
     function confirmOrder(orderId) {
         if (!confirm('确认已收到商品吗？')) return;
+        
         $.ajax({
             url: '/order/confirm/' + orderId,
             type: 'POST',
@@ -364,54 +469,127 @@
         });
     }
     
-    // 自动刷新订单状态（轮询）
-    let pollInterval;
+    // ========================================
+    // 轮询机制：自动刷新订单状态
+    // ========================================
+    // 
+    // 【功能说明】
+    // 用户在订单列表页面时，无需手动刷新，系统自动检测订单状态变化
+    // 当订单状态发生改变时（如：商家接单、骑手配送），自动刷新页面
+    // 
+    // 【实现原理】
+    // 1. 使用 setInterval 每5秒向后端发送一次AJAX请求
+    // 2. 后端查询订单的最新状态并返回
+    // 3. 前端对比状态，发现变化则刷新页面
+    // 
+    // 【技术要点】
+    // - setInterval：JavaScript定时器，周期性执行函数
+    // - AJAX轮询：定期请求服务器获取最新数据
+    // - DOM操作：通过data-order-id属性定位订单元素
+    // - 资源管理：页面关闭时清理定时器，避免内存泄漏
+    // 
+    // 【应用场景】
+    // - 用户下单支付后，等待商家接单（状态从 pending → paid → preparing）
+    // - 商家制作完成后，等待骑手配送（状态从 preparing → delivering）
+    // - 骑手送达后，等待用户确认收货（状态从 delivering → delivered → completed）
+    // 
+    // ========================================
+    
+    let pollInterval; // 轮询定时器（全局变量，用于后续清理）
+    
+    /**
+     * 启动轮询机制
+     * 每5秒检查一次订单状态是否有变化
+     */
     function startPolling() {
-        // 收集页面上所有订单ID
+        // ---------- 步骤1：收集页面上所有订单ID ----------
+        // 技术说明：
+        // - querySelectorAll('.order-card')：查找所有订单卡片元素
+        // - getAttribute('data-order-id')：获取订单ID（在Thymeleaf模板中通过 th:attr 设置）
+        // - 示例HTML：<div class="order-card" data-order-id="123">...</div>
         const orderIds = [];
         document.querySelectorAll('.order-card').forEach(card => {
             const orderId = card.getAttribute('data-order-id');
             if (orderId) orderIds.push(orderId);
         });
         
+        // 如果页面没有订单，则不启动轮询（优化：避免无意义的请求）
         if (orderIds.length === 0) return;
         
+        // ---------- 步骤2：设置定时器，每5秒执行一次 ----------
+        // setInterval(函数, 时间间隔毫秒)
+        // 5000毫秒 = 5秒
         pollInterval = setInterval(() => {
+            // ---------- 步骤3：发送AJAX请求到后端 ----------
             $.ajax({
-                url: '/order/checkUpdates',
-                type: 'GET',
-                data: { orderIds: orderIds.join(',') },
+                url: '/order/checkUpdates',              // 后端接口地址
+                type: 'GET',                             // HTTP方法：GET
+                data: { orderIds: orderIds.join(',') }, // 参数：订单ID列表，逗号分隔（如："123,456,789"）
+                
+                // ---------- 步骤4：处理后端响应 ----------
                 success: function(res) {
+                    // 【情况1：登录已过期】
+                    // 后端检测到Session失效时，返回 needLogin: true
                     if (res.needLogin) {
-                        clearInterval(pollInterval);
-                        return;
+                        clearInterval(pollInterval); // 停止轮询（重要：避免继续发送无效请求）
+                        return;                      // 提前返回，不再执行后续逻辑
                     }
+                    
+                    // 【情况2：成功获取订单状态更新】
                     if (res.success && res.updates) {
-                        let hasChange = false;
+                        let hasChange = false; // 标志位：是否有状态变化
+                        
+                        // 遍历所有订单的最新状态
                         res.updates.forEach(update => {
+                            // 找到页面上对应订单的状态显示元素
+                            // 示例：<span class="order-status">待支付</span>
                             const statusSpan = document.querySelector(`[data-order-id="${update.orderId}"] .order-status`);
+                            
+                            // 对比状态文本是否变化
+                            // 旧状态："待支付"  vs  新状态："已支付" → 发现变化
                             if (statusSpan && statusSpan.innerText !== update.statusText) {
-                                hasChange = true;
+                                hasChange = true; // 标记有变化
                             }
                         });
-                        // 如果有状态变化，刷新页面
+                        
+                        // ---------- 步骤5：检测到状态变化，刷新页面 ----------
+                        // 为什么刷新页面？
+                        // - 不仅状态文本要更新，订单卡片的样式、操作按钮也要变化
+                        // - 刷新页面是最简单的方式（也可以用局部DOM更新，但代码复杂）
                         if (hasChange) {
-                            location.reload();
+                            location.reload(); // 刷新当前页面
                         }
                     }
                 }
             });
-        }, 5000); // 每5秒轮询一次
+        }, 5000); // 每5秒执行一次（轮询间隔）
+        
+        // 【为什么是5秒？】
+        // - 太快（如1秒）：服务器压力大，用户体验提升不明显
+        // - 太慢（如30秒）：用户等待时间长，体验差
+        // - 5秒是经验值：兼顾实时性和服务器压力
     }
     
-    // 页面加载时启动轮询
+    // ========================================
+    // 生命周期管理
+    // ========================================
+    
+    // 【页面加载完成时】启动轮询
+    // $(document).ready() 确保DOM元素都已加载完毕
     $(document).ready(function() {
-        startPolling();
+        startPolling(); // 启动轮询机制
     });
     
-    // 页面关闭时停止轮询
+    // 【页面关闭时】停止轮询（重要：防止内存泄漏）
+    // beforeunload：用户关闭标签页或离开页面时触发
     window.addEventListener('beforeunload', function() {
-        if (pollInterval) clearInterval(pollInterval);
+        if (pollInterval) {
+            clearInterval(pollInterval); // 清除定时器
+        }
+        // 为什么要清除？
+        // - 定时器不会自动销毁，会持续占用内存
+        // - 用户离开页面后，继续轮询没有意义
+        // - 如果不清除，可能导致内存泄漏
     });
 </script>
 </body>
